@@ -249,10 +249,10 @@
                                     message="version=${project.version}${line.separator}by=${user.name}${line.separator}"/>
                                 <echo
                                     file="target/specman.bat"
-                                    message="@echo off${line.separator}javaw -jar %SPECMAN_HOME%\specman-${project.version}-jar-with-dependencies.jar %1${line.separator}"/>
+                                    message="@echo off${line.separator}javaw -jar %SPECMAN_HOME%\specman-${project.version}-jar-with-dependencies.jar %*${line.separator}"/>
                                 <echo
                                     file="target/specman.sh"
-                                    message="#!/bin/sh${line.separator}javaw -jar $SPECMAN_HOME/specman-${project.version}-jar-with-dependencies.jar $1${line.separator}"/>
+                                    message="#!/bin/sh${line.separator}javaw -jar $SPECMAN_HOME/specman-${project.version}-jar-with-dependencies.jar &quot;$@&quot;${line.separator}"/>
                             </target>
                         </configuration>
                         <goals>
