@@ -88,6 +88,7 @@ mainSequence
 step
     : simpleStep
     | breakStep
+    | sourceStep
     | whileStep
     | doWhileStep
     | ifElseStep
@@ -104,6 +105,12 @@ simpleStep
 // UI convention: break text is single-line, but the model allows extra areas.
 breakStep
     : 'break' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? ')' (';' | '{' editContainerTail '}')
+    ;
+
+// Source step (Quellschritt): the ghost left behind when a step is moved in change mode.
+// The changeset parameter (ID) is mandatory; sourceStep= links to the moved (target) step.
+sourceStep
+    : 'source' '(' stepNum ',' stepId ',' editContainerHead ',' ID (',' 'sourceStep' '=' STEP_ID)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // barWidth preserves the user-set width of the loop bar in pixels.
@@ -337,6 +344,7 @@ KW_MARKUPS         : 'markups' ;
 KW_SCALE           : 'scale' ;
 KW_TYPE            : 'type' ;
 KW_CHANGE          : 'change' ;
+KW_SOURCE          : 'source' ;
 KW_SOURCE_STEP     : 'sourceStep' ;
 KW_CHANGE_MODE     : 'changeModeEnabled' ;
 KW_CHANGESET_NAME  : 'changeSetName' ;

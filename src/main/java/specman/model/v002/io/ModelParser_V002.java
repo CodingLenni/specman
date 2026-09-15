@@ -30,6 +30,7 @@ import specman.model.v002.PdfExportOptionsModel_V002;
 import specman.model.v002.SimpleStepModel_V002;
 import specman.model.v002.SpecmanModel_V002Lexer;
 import specman.model.v002.SpecmanModel_V002Parser;
+import specman.model.v002.SourceStepModel_V002;
 import specman.model.v002.StepSequenceModel_V002;
 import specman.model.v002.SubsequenceStepModel_V002;
 import specman.model.v002.TableEditAreaModel_V002;
@@ -291,6 +292,7 @@ public class ModelParser_V002 {
                                               Map<String, String> breakStepIds) {
         if (ctx.simpleStep() != null)     { return buildSimpleStep(ctx.simpleStep()); }
         if (ctx.breakStep() != null)      { return buildBreakStep(ctx.breakStep(), breakStepIds); }
+        if (ctx.sourceStep() != null)     { return buildSourceStep(ctx.sourceStep()); }
         if (ctx.whileStep() != null)      { return buildWhileStep(ctx.whileStep()); }
         if (ctx.doWhileStep() != null)    { return buildDoWhileStep(ctx.doWhileStep()); }
         if (ctx.ifElseStep() != null)     { return buildIfElseStep(ctx.ifElseStep()); }
@@ -300,7 +302,13 @@ public class ModelParser_V002 {
         throw new IllegalStateException("Unknown step type in context: " + ctx.getText());
     }
 
-    private SimpleStepModel_V002 buildSimpleStep(SpecmanModel_V002Parser.SimpleStepContext ctx) {
+    private AbstractStepModel_V002 buildSimpleStep(SpecmanModel_V002Parser.SimpleStepContext ctx) {
+        // Backward compat: old files may encode a source step as simple(..., change=(source, cs))
+        SpecmanModel_V002Parser.ChangeParamContext cp = ctx.changeParam();
+        if (cp != null && "source".equals(cp.changeType().getText())) {
+            return buildSourceStepFromLegacy(ctx.stepId().getText(), ctx.stepNum().getText(),
+                buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()), cp);
+        }
         return new SimpleStepModel_V002(
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
@@ -308,6 +316,35 @@ public class ModelParser_V002 {
             -1,
             buildChangeInfo(ctx.changeParam()),
             buildSourceStepId(ctx.changeParam()),
+            RoundedBorderDecorationStyle.None);
+    }
+
+    private SourceStepModel_V002 buildSourceStepFromLegacy(String id, String stepNum,
+                                                            EditorContentModel_V002 content,
+                                                            SpecmanModel_V002Parser.ChangeParamContext cp) {
+        String changesetName = cp.ID().getText();
+        ChangeSet cs = ChangeSet.fromName(changesetName);
+        if (cs == null) {
+            cs = ChangeSet.changeset();
+        }
+        return new SourceStepModel_V002(id, stepNum, content, -1,
+            new ChangeInfo(Aenderungsart.Quellschritt, cs), null, RoundedBorderDecorationStyle.None);
+    }
+
+    private SourceStepModel_V002 buildSourceStep(SpecmanModel_V002Parser.SourceStepContext ctx) {
+        String changesetName = ctx.ID().getText();
+        ChangeSet cs = ChangeSet.fromName(changesetName);
+        if (cs == null) {
+            cs = ChangeSet.changeset();
+        }
+        String targetStepId = ctx.STEP_ID() != null ? ctx.STEP_ID().getText() : null;
+        return new SourceStepModel_V002(
+            ctx.stepId().getText(),
+            ctx.stepNum().getText(),
+            buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
+            -1,
+            new ChangeInfo(Aenderungsart.Quellschritt, cs),
+            targetStepId,
             RoundedBorderDecorationStyle.None);
     }
 

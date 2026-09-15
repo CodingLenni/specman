@@ -20,6 +20,7 @@ import specman.model.v002.IfStepModel_V002;
 import specman.model.v002.ImageEditAreaModel_V002;
 import specman.model.v002.ListItemEditAreaModel_V002;
 import specman.model.v002.Markup_V002;
+import specman.model.v002.SourceStepModel_V002;
 import specman.model.v002.StepSequenceModel_V002;
 import specman.model.v002.SubsequenceStepModel_V002;
 import specman.model.v002.TableEditAreaModel_V002;
@@ -378,14 +379,31 @@ public class ModelSerializer_V002 {
             appendCaseStep(caseStep, idToNum);
         } else if (step instanceof SubsequenceStepModel_V002 subseq) {
             appendSubsequenceStep(subseq, idToNum);
+        } else if (step instanceof SourceStepModel_V002 sourceStep) {
+            appendSourceStep(sourceStep);
         } else {
-            // SimpleStepModel_V002, SourceStepModel_V002, and any unknown types
+            // SimpleStepModel_V002 and any unknown types
             appendLeafStep(SIMPLE, step);
         }
     }
 
-    private void appendLeafStep(ModelKeyword_V002 keyword, AbstractStepModel_V002 step) {
+    private void appendSourceStep(SourceStepModel_V002 step) {
+        String cs = step.changeInfo != null && step.changeInfo.changeset != null
+            ? step.changeInfo.changeset : "yellow";
+        String targetParam = step.sourceStepId != null
+            ? SOURCE_STEP + "=" + AbstractStepModel_V002.normalizeId(step.sourceStepId)
+            : null;
         boolean hasExtraAreas = hasContent(step.content) && step.content.areas.size() > 1;
+        if (hasExtraAreas) {
+            blockOpen(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam);
+            appendEditContainerTail(step.content, 1);
+            blockClose();
+        } else {
+            block(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam);
+        }
+    }
+
+    private void appendLeafStep(ModelKeyword_V002 keyword, AbstractStepModel_V002 step) {        boolean hasExtraAreas = hasContent(step.content) && step.content.areas.size() > 1;
         if (hasExtraAreas) {
             blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), changeAnno(step.changeInfo, step.sourceStepId));
             appendEditContainerTail(step.content, 1);
