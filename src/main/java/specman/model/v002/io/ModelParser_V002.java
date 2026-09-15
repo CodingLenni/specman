@@ -487,7 +487,7 @@ public class ModelParser_V002 {
                 itemContent.areas.add(buildText(item.editContainerHead().htmlContent()));
                 if (item.listItemTail() != null) {
                     for (SpecmanModel_V002Parser.TextAreaContext ta : item.listItemTail().textArea()) {
-                        itemContent.areas.add(buildText(ta.htmlContent()));
+                        itemContent.areas.add(buildText(ta.htmlContent(), ta.changeParam()));
                     }
                     for (SpecmanModel_V002Parser.TableBlockContext tb : item.listItemTail().tableBlock()) {
                         itemContent.areas.add(buildTable(tb));
@@ -499,7 +499,7 @@ public class ModelParser_V002 {
                 result.add(new ListItemEditAreaModel_V002(itemContent, ordered, buildChangeInfo(item.changeParam())));
             }
         } else if (ctx.textArea() != null) {
-            result.add(buildText(ctx.textArea().htmlContent()));
+            result.add(buildText(ctx.textArea().htmlContent(), ctx.textArea().changeParam()));
         } else if (ctx.tableBlock() != null) {
             result.add(buildTable(ctx.tableBlock()));
         } else if (ctx.imageBlock() != null) {
@@ -513,6 +513,11 @@ public class ModelParser_V002 {
     // -----------------------------------------------------------------------
 
     private TextEditAreaModel_V002 buildText(SpecmanModel_V002Parser.HtmlContentContext ctx) {
+        return buildText(ctx, null);
+    }
+
+    private TextEditAreaModel_V002 buildText(SpecmanModel_V002Parser.HtmlContentContext ctx,
+                                              SpecmanModel_V002Parser.ChangeParamContext changeParamCtx) {
         String html = stripBackticks(ctx.BACKTICK_STRING().getText());
         String plain = ctx.plainAttr() != null
             ? stripBackticks(ctx.plainAttr().BACKTICK_STRING().getText())
@@ -520,7 +525,7 @@ public class ModelParser_V002 {
         List<Markup_V002> markups = ctx.markupsAttr() != null
             ? buildMarkups(ctx.markupsAttr())
             : new ArrayList<>();
-        return new TextEditAreaModel_V002(html, plain, markups, (ChangeInfo) null);
+        return new TextEditAreaModel_V002(html, plain, markups, buildChangeInfo(changeParamCtx));
     }
 
     private List<Markup_V002> buildMarkups(SpecmanModel_V002Parser.MarkupsAttrContext ctx) {
@@ -563,7 +568,7 @@ public class ModelParser_V002 {
             }
             cells.add(rowCells);
         }
-        return new TableEditAreaModel_V002(cells, width, colWidths, (ChangeInfo) null);
+        return new TableEditAreaModel_V002(cells, width, colWidths, buildChangeInfo(ctx.changeParam()));
     }
 
     // -----------------------------------------------------------------------
@@ -580,7 +585,7 @@ public class ModelParser_V002 {
         byte[] imageData = base64Data.isEmpty()
             ? new byte[0]
             : Base64.getDecoder().decode(base64Data);
-        return new ImageEditAreaModel_V002(imageData, type, scale, (ChangeInfo) null);
+        return new ImageEditAreaModel_V002(imageData, type, scale, buildChangeInfo(ctx.changeParam()));
     }
 
     // -----------------------------------------------------------------------

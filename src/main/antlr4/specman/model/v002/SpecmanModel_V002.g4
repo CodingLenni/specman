@@ -204,12 +204,12 @@ listItemTail
 
 // Intermediate TextEditAreaModel_V002 within a multi-area container.
 textArea
-    : 'text' '(' htmlContent ')'
+    : 'text' '(' htmlContent (',' changeParam)? ')'
     ;
 
 // TableEditAreaModel_V002
 tableBlock
-    : 'table' '(' 'width' '=' PERCENT (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? ')' '{' tableRow* '}'
+    : 'table' '(' 'width' '=' PERCENT (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' changeParam)? ')' '{' tableRow* '}'
     ;
 
 tableRow
@@ -224,7 +224,7 @@ tableCell
 
 // ImageEditAreaModel_V002 — agents must skip this block entirely.
 imageBlock
-    : 'image' '(' 'scale' '=' PERCENT ',' 'type' '=' ID ')' '{' BASE64_BLOCK '}'
+    : 'image' '(' 'scale' '=' PERCENT ',' 'type' '=' ID (',' changeParam)? ')' '{' BASE64_BLOCK '}'
     ;
 
 // --- HTML content with optional Specman-managed metadata ---

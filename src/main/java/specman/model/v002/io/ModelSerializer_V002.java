@@ -216,7 +216,12 @@ public class ModelSerializer_V002 {
                 }
                 blockClose();
             } else if (area instanceof TextEditAreaModel_V002 textArea) {
-                sb.append(indent()).append(TEXT).append("(").append(htmlContent(textArea)).append(")\n");
+                String anno = changeAnno(textArea.changeInfo);
+                sb.append(indent()).append(TEXT).append("(").append(htmlContent(textArea));
+                if (anno != null) {
+                    sb.append(", ").append(anno);
+                }
+                sb.append(")\n");
                 i++;
             } else if (area instanceof TableEditAreaModel_V002 tableArea) {
                 appendTable(tableArea);
@@ -261,7 +266,7 @@ public class ModelSerializer_V002 {
             }
             cols = c.append("]").toString();
         }
-        blockOpen(TABLE, WIDTH + "=" + tableArea.tableWidthPercent + "%", cols);
+        blockOpen(TABLE, WIDTH + "=" + tableArea.tableWidthPercent + "%", cols, changeAnno(tableArea.changeInfo));
         if (tableArea.cells != null) {
             for (List<EditorContentModel_V002> row : tableArea.cells) {
                 appendTableRow(row);
@@ -299,8 +304,12 @@ public class ModelSerializer_V002 {
         String scaleStr = String.format(java.util.Locale.US, "%.2f", scale).replaceAll("\\.?0+$", "");
         String type = imageArea.imageType != null ? imageArea.imageType : "png";
         String base64 = imageArea.imageData != null ? Base64.getEncoder().encodeToString(imageArea.imageData) : "";
-        sb.append(indent()).append(IMAGE).append("(").append(SCALE).append("=").append(scaleStr).append("%, ").append(TYPE).append("=").append(type)
-          .append(") { [base64:").append(base64).append("] }\n");
+        String anno = changeAnno(imageArea.changeInfo);
+        sb.append(indent()).append(IMAGE).append("(").append(SCALE).append("=").append(scaleStr).append("%, ").append(TYPE).append("=").append(type);
+        if (anno != null) {
+            sb.append(", ").append(anno);
+        }
+        sb.append(") { [base64:").append(base64).append("] }\n");
     }
 
     // ---- Change annotation ----
