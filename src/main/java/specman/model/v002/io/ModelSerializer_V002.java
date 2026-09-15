@@ -379,7 +379,7 @@ public class ModelSerializer_V002 {
     private void appendLoopStep(ModelKeyword_V002 keyword, StepSequenceModel_V002 loopSeq,
                                 AbstractStepModel_V002 step,
                                 Map<String, String> idToNum, boolean withCatch, String extraParam) {
-        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam);
+        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam, changeAnno(step.changeInfo));
         appendEditContainerTail(step.content, 1);
         appendSteps(loopSeq, idToNum);
         if (withCatch && loopSeq != null) {
@@ -393,7 +393,8 @@ public class ModelSerializer_V002 {
           stepNum(step),
           stepId(step),
           editContainerHead(step.content),
-          String.format(java.util.Locale.US, IF_RATIO + "=%.2f%%", step.ifWidthRatio * 100)
+          String.format(java.util.Locale.US, IF_RATIO + "=%.2f%%", step.ifWidthRatio * 100),
+          changeAnno(step.changeInfo)
         );
         appendEditContainerTail(step.content, 1);
         appendBranch(IF_BRANCH, step.ifSequence, idToNum, true);
@@ -434,7 +435,8 @@ public class ModelSerializer_V002 {
           stepNum(step),
           stepId(step),
           editContainerHead(step.content),
-          EMPTY_WIDTH + "=" + step.emptyWidth
+          EMPTY_WIDTH + "=" + step.emptyWidth,
+          changeAnno(step.changeInfo)
         );
 
         appendEditContainerTail(step.content, 1);
@@ -453,7 +455,7 @@ public class ModelSerializer_V002 {
             }
             cols = c.append("]").toString();
         }
-        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols);
+        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols, changeAnno(step.changeInfo));
         appendEditContainerTail(step.content, 1);
         appendBranch(DEFAULT_BRANCH, step.defaultSequence, idToNum, false);
         if (step.caseSequences != null) {
@@ -469,7 +471,8 @@ public class ModelSerializer_V002 {
           stepNum(step),
           stepId(step),
           editContainerHead(step.content),
-          step.flatNumbering ? FLAT + "=true" : null
+          step.flatNumbering ? FLAT + "=true" : null,
+          changeAnno(step.changeInfo)
         );
         appendEditContainerTail(step.content, 1);
         appendSteps(step.subsequence, idToNum);
@@ -482,7 +485,7 @@ public class ModelSerializer_V002 {
         if (branch == null) {
             return;
         }
-        blockOpen(keyword, editContainerHead(branch.heading));
+        blockOpen(keyword, editContainerHead(branch.heading), changeAnno(branch.changeInfo));
         appendEditContainerTail(branch.heading, 1);
         appendSteps(branch, idToNum);
         if (withCatch) {
@@ -499,12 +502,12 @@ public class ModelSerializer_V002 {
         }
         for (CatchSequenceModel_V002 catchSeq : catchArea.catchSequences) {
             String breakStepNum = idToNum.getOrDefault(catchSeq.id, "?");
-            blockOpen(CATCH, breakStepNum, editContainerHead(catchSeq.heading));
+            blockOpen(CATCH, breakStepNum, editContainerHead(catchSeq.heading), changeAnno(catchSeq.changeInfo));
             appendEditContainerTail(catchSeq.heading, 1);
             if (catchSeq.coCatches != null) {
                 for (CoCatchModel_V002 coCatch : catchSeq.coCatches) {
                     String coCatchNum = idToNum.getOrDefault(coCatch.breakStepId, "?");
-                    block(CO_CATCH, coCatchNum, editContainerHead(coCatch.heading));
+                    block(CO_CATCH, coCatchNum, editContainerHead(coCatch.heading), changeAnno(coCatch.changeInfo));
                 }
             }
             appendSteps(catchSeq, idToNum);

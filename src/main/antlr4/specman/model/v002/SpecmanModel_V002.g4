@@ -108,60 +108,60 @@ breakStep
 
 // barWidth preserves the user-set width of the loop bar in pixels.
 whileStep
-    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 doWhileStep
-    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? ')' '{' editContainerTail step+ '}'
+    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // ifRatio preserves the user-set width ratio of the if-branch vs. total (as percentage).
 ifElseStep
-    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? ')' '{' editContainerTail ifBranch elseBranch '}'
+    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' changeParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
     ;
 
 // emptyWidth preserves the user-set width of the empty else area in pixels.
 ifStep
-    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? ')' '{' editContainerTail ifBranch '}'
+    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail ifBranch '}'
     ;
 
 // editContainerTail covers extra areas of the condition content (e.g. a condition list).
 // Requires exactly one defaultBranch and at least two caseBranches.
 // cols=[...] preserves the user-set column width ratios (one entry per branch incl. default).
 caseStep
-    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? ')'
+    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' changeParam)? ')'
       '{' editContainerTail defaultBranch caseBranch caseBranch+ '}'
     ;
 
 // flat=true preserves the flat-numbering flag as an inline parameter, consistent with other optionals.
 subsequenceStep
-    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 // Branch headings are EditorContentModel_V002 — full EditContainer pattern.
 ifBranch
-    : 'if_branch' '(' editContainerHead ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'if_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 elseBranch
-    : 'else_branch' '(' editContainerHead ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'else_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 defaultBranch
-    : 'default_branch' '(' editContainerHead ')' '{' editContainerTail step+ '}'
+    : 'default_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 caseBranch
-    : 'case_branch' '(' editContainerHead ')' '{' editContainerTail step+ '}'
+    : 'case_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // Catch/coCatch headings are EditorContentModel_V002 — full EditContainer pattern.
 catchBlock
-    : 'catch' '(' stepNum ',' editContainerHead ')' '{' editContainerTail coCatch* step+ '}'
+    : 'catch' '(' stepNum ',' editContainerHead (',' changeParam)? ')' '{' editContainerTail coCatch* step+ '}'
     ;
 
 coCatch
-    : 'coCatch' '(' stepNum ',' editContainerHead ')' ';'
+    : 'coCatch' '(' stepNum ',' editContainerHead (',' changeParam)? ')' ';'
     ;
 
 // --- EditContainer building blocks ---
