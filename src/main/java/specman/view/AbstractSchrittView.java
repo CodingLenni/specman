@@ -427,6 +427,7 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public void viewsNachinitialisieren() {
     switch (changeInfo.art()) {
+      case Hinzugefuegt -> setBackgroundUDBL(changeInfo.changeSet().panelColor());
       case Geloescht -> setGeloeschtMarkiertStilUDBL();
       case Quellschritt -> ((QuellSchrittView) this).setQuellStil();
       case Zielschritt -> setZielschrittStilUDBL();

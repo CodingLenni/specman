@@ -263,7 +263,6 @@ changeParam
 changeType
     : 'added'
     | 'removed'
-    | 'modified'
     ;
 
 boolVal
