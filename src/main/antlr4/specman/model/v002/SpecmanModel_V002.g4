@@ -256,13 +256,16 @@ markupType
 // --- ChangeInfoModel_V002 as inline parameter ---
 
 // change=(type, changeset) — inline, consistent with other optional parameters.
+// sourceStep=id is present only for target steps, giving the ID of the source step.
 changeParam
-    : 'change' '=' '(' changeType ',' ID ')'
+    : 'change' '=' '(' changeType ',' ID (',' 'sourceStep' '=' STEP_ID)? ')'
     ;
 
 changeType
     : 'added'
     | 'removed'
+    | 'source'
+    | 'target'
     ;
 
 boolVal
@@ -334,6 +337,7 @@ KW_MARKUPS         : 'markups' ;
 KW_SCALE           : 'scale' ;
 KW_TYPE            : 'type' ;
 KW_CHANGE          : 'change' ;
+KW_SOURCE_STEP     : 'sourceStep' ;
 KW_CHANGE_MODE     : 'changeModeEnabled' ;
 KW_CHANGESET_NAME  : 'changeSetName' ;
 KW_PDF_OPTIONS     : 'pdfOptions' ;

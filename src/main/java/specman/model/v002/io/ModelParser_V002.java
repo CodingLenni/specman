@@ -307,7 +307,7 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None);
     }
 
@@ -322,7 +322,7 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None);
     }
 
@@ -338,7 +338,7 @@ public class ModelParser_V002 {
             false,
             buildLoopSequence(ctx.step(), ctx.catchBlock()),
             barWidth,
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None);
     }
 
@@ -354,7 +354,7 @@ public class ModelParser_V002 {
             false,
             buildLoopSequence(ctx.step(), List.of()),
             barWidth,
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None);
     }
 
@@ -379,7 +379,7 @@ public class ModelParser_V002 {
             ifSeq,
             elseSeq,
             ifWidthRatio,
-            null);
+            buildSourceStepId(ctx.changeParam()));
     }
 
     private IfStepModel_V002 buildIfStep(SpecmanModel_V002Parser.IfStepContext ctx) {
@@ -398,7 +398,7 @@ public class ModelParser_V002 {
             buildChangeInfo(ctx.changeParam()),
             ifSeq,
             emptyWidth,
-            null);
+            buildSourceStepId(ctx.changeParam()));
     }
 
     private CaseStepModel_V002 buildCaseStep(SpecmanModel_V002Parser.CaseStepContext ctx) {
@@ -430,7 +430,7 @@ public class ModelParser_V002 {
             false,
             defaultSeq,
             columnWidthRatios,
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None);
         for (SpecmanModel_V002Parser.CaseBranchContext cb : ctx.caseBranch()) {
             step.addCase(buildBranch(cb.editContainerHead(), cb.editContainerTail(), cb.changeParam(), cb.step(), List.of()));
@@ -448,7 +448,7 @@ public class ModelParser_V002 {
             buildChangeInfo(ctx.changeParam()),
             false,
             buildLoopSequence(ctx.step(), ctx.catchBlock()),
-            null,
+            buildSourceStepId(ctx.changeParam()),
             RoundedBorderDecorationStyle.None,
             flat);
     }
@@ -601,6 +601,8 @@ public class ModelParser_V002 {
         Aenderungsart art = switch (type) {
             case "added"   -> Aenderungsart.Hinzugefuegt;
             case "removed" -> Aenderungsart.Geloescht;
+            case "source"  -> Aenderungsart.Quellschritt;
+            case "target"  -> Aenderungsart.Zielschritt;
             default        -> Aenderungsart.Untracked;
         };
         if (art == Aenderungsart.Untracked) {
@@ -611,6 +613,13 @@ public class ModelParser_V002 {
             cs = ChangeSet.changeset();
         }
         return new ChangeInfo(art, cs);
+    }
+
+    private String buildSourceStepId(SpecmanModel_V002Parser.ChangeParamContext ctx) {
+        if (ctx == null || ctx.STEP_ID() == null) {
+            return null;
+        }
+        return ctx.STEP_ID().getText();
     }
 
     // -----------------------------------------------------------------------
