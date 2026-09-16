@@ -318,7 +318,7 @@ public class LoadDiagrammSpecmanOp extends AbstractInitSpecmanOp {
 
   private void quellZielZuweisungV002(DiagramModel_V002 model) {
     for (AbstractStepModel_V002 step : model.queryAllSteps()) {
-      if (step.isTargetStep() && step.sourceStepId != null) {
+      if (step.isTargetStep()) {
         AbstractSchrittView zielView = getHauptSequenz().findViewByStepId(step.id);
         QuellSchrittView quellView = (QuellSchrittView) getHauptSequenz().findViewByStepId(
           AbstractStepModel_V002.normalizeId(step.sourceStepId));
