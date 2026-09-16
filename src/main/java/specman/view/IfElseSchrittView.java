@@ -48,8 +48,8 @@ public class IfElseSchrittView extends VerzweigungSchrittView implements Compone
 		initIfElsePanel(withDefaultContent ? id : null, withDefaultContent ? changeInfo : null);
 	}
 
-	protected IfElseSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo) {
-		super(parent, content, stepId, changeInfo, createPanelLayout());
+	protected IfElseSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, Integer shade) {
+		super(parent, content, stepId, changeInfo, shade, createPanelLayout());
 		initIfElsePanel(null, null);
 		this.id = stepId;
 	}
@@ -76,10 +76,9 @@ public class IfElseSchrittView extends VerzweigungSchrittView implements Compone
 	}
 
 	public IfElseSchrittView(SchrittSequenzView parent, IfElseStepModel_V002 model) {
-		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED);
+		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade);
 		initIfSequenz(new ZweigSchrittSequenzView(this, model.ifSequence));
 		initElseSequenz(new ZweigSchrittSequenzView(this, model.elseSequence));
-		setBackgroundUDBL(new Color(model.color));
 		ifBreitenanteilSetzen(model.ifWidthRatio);
 		klappen.init(model.collapsed);
 	}
@@ -235,7 +234,7 @@ public class IfElseSchrittView extends VerzweigungSchrittView implements Compone
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			getDecorated(),
 			klappen.isSelected(),
 			changeInfo,
@@ -291,6 +290,7 @@ public class IfElseSchrittView extends VerzweigungSchrittView implements Compone
 		int changesMade = super.aenderungenUebernehmen();
 		changesMade += elseSequenz.aenderungenUebernehmen();
 		changesMade += ifSequenz.aenderungenUebernehmen();
+		applyEffectiveBackgroundUDBL();
 		return changesMade;
 	}
 
@@ -305,6 +305,7 @@ public class IfElseSchrittView extends VerzweigungSchrittView implements Compone
 		int changesRejected = super.aenderungenVerwerfen();
 		changesRejected += elseSequenz.aenderungenVerwerfen();
 		changesRejected += ifSequenz.aenderungenVerwerfen();
+		applyEffectiveBackgroundUDBL();
 		return changesRejected;
 	}
 

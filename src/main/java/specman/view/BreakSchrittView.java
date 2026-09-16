@@ -52,9 +52,8 @@ public class BreakSchrittView extends AbstractSchrittView {
 	}
 
 	public BreakSchrittView(SchrittSequenzView parent, BreakStepModel_V002 model) {
-		super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED);
+		super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade);
 		initPanel();
-		setBackgroundUDBL(new Color(model.color));
 		this.id = model.id;
 	}
 
@@ -109,7 +108,7 @@ public class BreakSchrittView extends AbstractSchrittView {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			changeInfo,
 			getSourceStepId(),
 			getDecorated()

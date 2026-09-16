@@ -368,7 +368,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             buildSourceStepId(ctx.changeParam()),
             buildDecorationStyle(ctx.decoParam()));
@@ -382,7 +382,7 @@ public class ModelParser_V002 {
         if (cs == null) {
             cs = ChangeSet.changeset();
         }
-        return new SourceStepModel_V002(id, stepNum, content, -1,
+        return new SourceStepModel_V002(id, stepNum, content, null,
             new ChangeInfo(Aenderungsart.Quellschritt, cs), null, RoundedBorderDecorationStyle.None);
     }
 
@@ -397,7 +397,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             new ChangeInfo(Aenderungsart.Quellschritt, cs),
             targetStepId,
             buildDecorationStyle(ctx.decoParam()));
@@ -412,7 +412,7 @@ public class ModelParser_V002 {
             id,
             stepNum,
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             buildSourceStepId(ctx.changeParam()),
             buildDecorationStyle(ctx.decoParam()));
@@ -425,7 +425,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             ctx.KW_COLLAPSED() != null,
             buildLoopSequenceFromContent(ctx.step(), ctx.catchArea()),
@@ -441,7 +441,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             ctx.KW_COLLAPSED() != null,
             buildLoopSequence(ctx.step(), List.of()),
@@ -464,7 +464,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildDecorationStyle(ctx.decoParam()),
             ctx.KW_COLLAPSED() != null,
             buildChangeInfo(ctx.changeParam()),
@@ -484,7 +484,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildDecorationStyle(ctx.decoParam()),
             ctx.KW_COLLAPSED() != null,
             buildChangeInfo(ctx.changeParam()),
@@ -517,7 +517,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             ctx.KW_COLLAPSED() != null,
             defaultSeq,
@@ -536,7 +536,7 @@ public class ModelParser_V002 {
             ctx.stepId().getText(),
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
-            -1,
+            buildShade(ctx.shadeParam()),
             buildChangeInfo(ctx.changeParam()),
             ctx.KW_COLLAPSED() != null,
             buildLoopSequenceFromContent(ctx.step(), ctx.catchArea()),
@@ -719,6 +719,17 @@ public class ModelParser_V002 {
             return RoundedBorderDecorationStyle.None;
         }
         return RoundedBorderDecorationStyle.valueOf(ctx.ID().getText());
+    }
+
+    private Integer buildShade(SpecmanModel_V002Parser.ShadeParamContext ctx) {
+        if (ctx == null) {
+            return null;
+        }
+        try {
+            return java.awt.Color.decode(ctx.COLOR_HEX().getText()).getRGB();
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // -----------------------------------------------------------------------

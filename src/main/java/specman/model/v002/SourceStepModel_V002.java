@@ -7,7 +7,7 @@ public class SourceStepModel_V002 extends AbstractStepModel_V002 {
 
     @Deprecated public SourceStepModel_V002() {} // For Jackson only
 
-    public SourceStepModel_V002(String id, String stepNumber, EditorContentModel_V002 content, int color, ChangeInfo changeInfo, String sourceStepId, RoundedBorderDecorationStyle decorationStyle) {
-        super(id, stepNumber, content, color, changeInfo, sourceStepId, decorationStyle);
+    public SourceStepModel_V002(String id, String stepNumber, EditorContentModel_V002 content, Integer shade, ChangeInfo changeInfo, String sourceStepId, RoundedBorderDecorationStyle decorationStyle) {
+        super(id, stepNumber, content, shade, changeInfo, sourceStepId, decorationStyle);
     }
 }

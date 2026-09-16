@@ -32,7 +32,7 @@ public class WhileSchrittView extends SchleifenSchrittView {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			changeInfo,
 			klappen.isSelected(),
 			wiederholSequenz.generiereSchrittSequenzModel(formatierterText),

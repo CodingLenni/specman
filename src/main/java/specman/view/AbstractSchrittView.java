@@ -79,6 +79,11 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 	protected SchrittSequenzView parent;
 	protected RoundedBorderDecorator roundedBorderDecorator;
 	protected QuellSchrittView quellschritt;
+	protected Color shadeColor = null;
+
+	protected static Color shadeColorFromModel(Integer shade) {
+		return shade != null ? new Color(shade) : null;
+	}
 
 	private final java.util.List<TextEditArea> referencedByTextEditAreas = new ArrayList<>();
 
@@ -91,10 +96,11 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 		editContainer.addEditComponentListener(this);
 	}
 
-	protected AbstractSchrittView(SchrittSequenzView parent, EditorContentModel_V002 content, String id, ChangeInfo changeInfo) {
+	protected AbstractSchrittView(SchrittSequenzView parent, EditorContentModel_V002 content, String id, ChangeInfo changeInfo, Integer shade) {
 		this.number = StepNumber.EMPTY;
 		this.id = id;
 		this.changeInfo = changeInfo;
+		this.shadeColor = shadeColorFromModel(shade);
 		this.editContainer = new EditContainer(content, this.number);
 		this.parent = parent;
 		editContainer.addEditAreasFocusListener(this);
@@ -140,6 +146,23 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public Color getBackground() {
 		return editContainer.getBackground();
+	}
+
+	public Color getShadeColor() {
+		return shadeColor;
+	}
+
+	public void setShadeColorUDBL(Color shade) {
+		shadeColor = shade;
+		applyEffectiveBackgroundUDBL();
+	}
+
+	public void applyEffectiveBackgroundUDBL() {
+		setBackgroundUDBL(changeInfo.effectiveStepBackground(shadeColor));
+	}
+
+	public Integer shadeColorForModel() {
+		return shadeColor != null ? shadeColor.getRGB() : null;
 	}
 
 	public void scrollTo() {
@@ -220,8 +243,8 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public void setGeloeschtMarkiertStilUDBL() {
 		setAenderungsartUDBL(Geloescht);
-		setBackgroundUDBL(changeInfo.changeSet().panelColor());
 		editContainer.setGeloeschtMarkiertStilUDBL(number, changeInfo.changeSet());
+		applyEffectiveBackgroundUDBL();
 	}
 
 	public void setZielschrittStilUDBL() {
@@ -249,8 +272,10 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 	 * hier keine Rolle. Diese werden bereits <i>vor</i> dem Aufruf der Methode hier über
 	 * {@link #editAenderungenUebernehmen} bzw. {@link #editAenderungenVerwerfen()} entfernt. */
 	public void aenderungsmarkierungenEntfernen() {
-		setBackgroundUDBL(BACKGROUND_COLOR_STANDARD);
 		editContainer.aenderungsmarkierungenEntfernen(number);
+		if (shadeColor != null) {
+			setBackgroundUDBL(shadeColor);
+		}
 	}
 
 	public boolean enthaeltAenderungsmarkierungen() {
@@ -427,11 +452,12 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public void viewsNachinitialisieren() {
     switch (changeInfo.art()) {
-      case Hinzugefuegt -> setBackgroundUDBL(changeInfo.changeSet().panelColor());
-      case Geloescht -> setGeloeschtMarkiertStilUDBL();
+      case Hinzugefuegt -> {} // panel color handled by applyEffectiveBackgroundUDBL below
+      case Geloescht -> editContainer.setGeloeschtMarkiertStilUDBL(number, changeInfo.changeSet());
       case Quellschritt -> ((QuellSchrittView) this).setQuellStil();
       case Zielschritt -> setZielschrittStilUDBL();
     }
+    applyEffectiveBackgroundUDBL();
     editContainer.viewsNachinitialisieren();
 		registerAllExistingStepnumbers();
 		unterSequenzen().forEach(SchrittSequenzView::viewsNachinitialisieren);
@@ -463,7 +489,7 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 	public void mergeChangeSetUDBL(@NotNull ChangeSet target, @NotNull ChangeSet source) {
 		if (changeInfo.changedBy(source)) {
 			UDBL.setChangeInfo(this, changeInfo.reassign(target));
-			setBackgroundUDBL(changeInfo.panelColor());
+			applyEffectiveBackgroundUDBL();
 		}
 		editContainer.mergeChangeSetUDBL(target, source, true);
 		unterSequenzen().forEach(seq -> seq.mergeChangeSetUDBL(target, source));

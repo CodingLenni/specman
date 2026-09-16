@@ -19,11 +19,10 @@ public class ToneOpButton extends AbstractADBLSpecmanOpButton {
       return;
     }
     AbstractSchrittView schritt = getHauptSequenz().findeSchritt(getLastFocusedTextArea());
-    Color aktuelleHintergrundfarbe = schritt.getBackground();
-    int farbwert = aktuelleHintergrundfarbe.getRed() == 240 ? 255 : 240;
-    Color neueHintergrundfarbe = new Color(farbwert, farbwert, farbwert);
-    schritt.setBackgroundUDBL(neueHintergrundfarbe);
-    addEdit(new UndoableSchrittEingefaerbt(schritt, aktuelleHintergrundfarbe, neueHintergrundfarbe));
+    Color alteShadeColor = schritt.getShadeColor();
+    Color neueShadeColor = alteShadeColor != null ? null : new Color(220, 220, 220);
+    schritt.setShadeColorUDBL(neueShadeColor);
+    addEdit(new UndoableSchrittEingefaerbt(schritt, alteShadeColor, neueShadeColor));
   }
 
 }

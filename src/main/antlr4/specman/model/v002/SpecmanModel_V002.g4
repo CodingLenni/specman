@@ -99,50 +99,50 @@ step
 
 // change=(type, changeset) is an optional inline parameter for ChangeInfoModel_V002.
 simpleStep
-    : 'simple' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
+    : 'simple' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // UI convention: break text is single-line, but the model allows extra areas.
 breakStep
-    : 'break' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
+    : 'break' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // Source step (Quellschritt): the ghost left behind when a step is moved in change mode.
 // The changeset parameter (ID) is mandatory; sourceStep= links to the moved (target) step.
 sourceStep
-    : 'source' '(' stepNum ',' stepId ',' editContainerHead ',' ID (',' 'sourceStep' '=' STEP_ID)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
+    : 'source' '(' stepNum ',' stepId ',' editContainerHead ',' ID (',' 'sourceStep' '=' STEP_ID)? (',' decoParam)? (',' shadeParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // barWidth preserves the user-set width of the loop bar in pixels.
 whileStep
-    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
+    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 doWhileStep
-    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
+    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // ifRatio preserves the user-set width ratio of the if-branch vs. total (as percentage).
 ifElseStep
-    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
+    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
     ;
 
 // emptyWidth preserves the user-set width of the empty else area in pixels.
 ifStep
-    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
+    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' '{' editContainerTail ifBranch '}'
     ;
 
 // editContainerTail covers extra areas of the condition content (e.g. a condition list).
 // Requires exactly one defaultBranch and at least two caseBranches.
 // cols=[...] preserves the user-set column width ratios (one entry per branch incl. default).
 caseStep
-    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')'
+    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')'
       '{' editContainerTail defaultBranch caseBranch caseBranch+ '}'
     ;
 
 // flat=true preserves the flat-numbering flag as an inline parameter, consistent with other optionals.
 subsequenceStep
-    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
+    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? (',' shadeParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 // Branch headings are EditorContentModel_V002 — full EditContainer pattern.
@@ -288,6 +288,11 @@ decoParam
     : 'deco' '=' ID
     ;
 
+// shade=#rrggbb — omitted when the step has no individual background shade.
+shadeParam
+    : 'shade' '=' COLOR_HEX
+    ;
+
 changeType
     : 'added'
     | 'removed'
@@ -371,6 +376,7 @@ KW_CHANGE          : 'change' ;
 KW_SOURCE          : 'source' ;
 KW_SOURCE_STEP     : 'sourceStep' ;
 KW_DECO            : 'deco' ;
+KW_SHADE           : 'shade' ;
 KW_COLLAPSED       : 'collapsed' ;
 KW_HEADING_WIDTH   : 'headingWidth' ;
 KW_CATCH_AREA      : 'catchArea' ;
@@ -385,6 +391,9 @@ KW_PAGING          : 'paging' ;
 
 // Identifiers: changeset names (yellow, blue), image types (png)
 ID          : [a-zA-Z][a-zA-Z0-9_-]* ;
+
+// Hex color value, e.g. #f0f0f0 — for shade parameter
+COLOR_HEX   : '#' [0-9a-fA-F]+ ;
 
 // Backtick-delimited HTML content; must not contain literal backtick characters
 BACKTICK_STRING : '`' ~'`'* '`' ;

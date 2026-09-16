@@ -51,8 +51,8 @@ public class SchleifenSchrittView extends AbstractSchrittView implements Spalten
 		initPanelAndLayout(mitUnteremBalken);
 	}
 
-	private SchleifenSchrittView(SchrittSequenzView parent, EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, boolean mitUnteremBalken) {
-		super(parent, content, stepId, changeInfo);
+	private SchleifenSchrittView(SchrittSequenzView parent, EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, Integer shade, boolean mitUnteremBalken) {
+		super(parent, content, stepId, changeInfo, shade);
 		initPanelAndLayout(mitUnteremBalken);
 	}
 
@@ -93,13 +93,12 @@ public class SchleifenSchrittView extends AbstractSchrittView implements Spalten
 	}
 
 	protected SchleifenSchrittView(SchrittSequenzView parent, WhileStepModel_V002 model, boolean mitUnteremBalken) {
-		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, mitUnteremBalken);
+		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade, mitUnteremBalken);
 		initWiederholsequenzFromModel(model);
 	}
 
 	protected void initWiederholsequenzFromModel(WhileStepModel_V002 model) {
 		initWiederholsequenz(new SchrittSequenzView(this, model.loopSequence));
-		setBackgroundUDBL(new Color(model.color));
 		balkenbreiteSetzen(model.barWidth);
 		klappen.init(model.collapsed);
 	}
@@ -203,7 +202,7 @@ public void skalieren(int prozentNeu, int prozentAktuell) {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			changeInfo,
 			klappen.isSelected(),
 			wiederholSequenz.generiereSchrittSequenzModel(formatierterText),

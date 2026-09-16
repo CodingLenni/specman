@@ -1,6 +1,7 @@
 package specman;
 
 import org.jetbrains.annotations.NotNull;
+import specman.graphics.ChangeColorSet;
 
 import java.awt.*;
 import java.util.Objects;
@@ -36,6 +37,17 @@ public class ChangeInfo {
 
   public Color panelColor() {
     return isChange() ? changeSet.panelColor() : BACKGROUND_COLOR_STANDARD;
+  }
+
+  public Color effectiveStepBackground(Color shadeColor) {
+    Color base = panelColor();
+    if (shadeColor == null) {
+      return base;
+    }
+    if (base.equals(BACKGROUND_COLOR_STANDARD)) {
+      return shadeColor;
+    }
+    return ChangeColorSet.combineColors(shadeColor, base);
   }
 
   public boolean isUntracked() { return art == Untracked; }

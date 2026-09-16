@@ -167,16 +167,9 @@ public class Specman extends JFrame implements EditorI, SpaltenContainerI, Specm
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (undoManager.hasUnsavedChanges()) {
-					int dialogResult = JOptionPane.showConfirmDialog(Specman.instance,
-							"Änderungen am Dokument '" + getDiagramFilename() + "' vor dem Schließen speichern?" +
-									"\nIhre Änderungen gehen verloren, wenn Sie diese nicht speichern.",
-							"Diagramm speichern?", JOptionPane.YES_NO_CANCEL_OPTION);
-
-					if (dialogResult == JOptionPane.CANCEL_OPTION) { // Prevent closing
+					if (!AbstractInitSpecmanOp.confirmDiscardUnsavedChanges(
+							getDiagramFilename(), () -> diagrammSpeichern(false))) {
 						return;
-					}
-					else if (dialogResult == JOptionPane.YES_OPTION) { // Save & Close
-						diagrammSpeichern(false);
 					}
 				}
 				AutoSaveOp.deleteWorkingCopyFor(diagrammDatei);

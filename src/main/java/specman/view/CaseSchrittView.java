@@ -53,8 +53,8 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 		initCasePanelComponents();
 	}
 
-	private CaseSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, int numCases) {
-		super(parent, content, stepId, changeInfo, createPanelLayout(numCases));
+	private CaseSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, Integer shade, int numCases) {
+		super(parent, content, stepId, changeInfo, shade, createPanelLayout(numCases));
 		initCasePanelComponents();
 	}
 
@@ -81,11 +81,10 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 	}
 
 	public CaseSchrittView(SchrittSequenzView parent, CaseStepModel_V002 model) {
-		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.caseSequences != null ? model.caseSequences.size() : 0);
+		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade, model.caseSequences != null ? model.caseSequences.size() : 0);
 		initCases(
 			new ZweigSchrittSequenzView(this, model.defaultSequence),
 			caseSequenzenAufbauenV2(model.caseSequences));
-		setBackgroundUDBL(new Color(model.color));
 		spaltenbreitenAnteileSetzen(model.columnWidthRatios != null ? new ArrayList<>(model.columnWidthRatios) : null);
 		klappen.init(model.collapsed);
 		this.id = model.id;
@@ -256,6 +255,7 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 	public void setBackgroundUDBL(Color bg) {
 		super.setBackgroundUDBL(bg);
 		sonstSequenz.ueberschrift.setBackgroundUDBL(bg);
+		caseSequenzen.forEach(seq -> seq.ueberschrift.setBackgroundUDBL(bg));
 		UDBL.setBackgroundUDBL(lueckenFueller, bg);
 		UDBL.setBackgroundUDBL(panelCase, bg);
 		UDBL.setBackgroundUDBL(panelSonst, bg);
@@ -269,7 +269,7 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			changeInfo,
 			klappen.isSelected(),
 			sonstSequenz.generiereZweigSchrittSequenzModel(formatierterText),
@@ -365,9 +365,7 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 			(this, linkerNachbar.naechsteNachbarSequenzID(), initialtext("Fall " + (linkerNachbarIndex+2)), TextInit.initialChangeInfo());
 		neuerZweig.einfachenSchrittAnhaengen();
 		zweigHinzufuegen(neuerZweig, linkerNachbarIndex+2);
-		if (neuerZweig == caseSequenzen.get(0)) {
-			panelFall1.setBackground(TextInit.schrittHintergrund());
-		}
+		applyEffectiveBackgroundUDBL();
 		return neuerZweig;
 	}
 	private ArrayList<Integer> zweigbreiteInSpaltenbreitenEinpassen(ZweigSchrittSequenzView zweig, int zweigIndex) {
@@ -514,6 +512,7 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 			}
 		}
 		changesMade += super.aenderungenUebernehmen();
+		applyEffectiveBackgroundUDBL();
 		return changesMade;
 	}
 
@@ -540,11 +539,9 @@ public class CaseSchrittView extends VerzweigungSchrittView {
 			}
 		}
 		changesRejected += super.aenderungenVerwerfen();
+		applyEffectiveBackgroundUDBL();
 		return changesRejected;
 	}
-
-
-
 	@Override
 	public Shape getShape() {
 		Shape shape = new Shape(getPanel())

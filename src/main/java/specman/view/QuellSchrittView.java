@@ -26,8 +26,7 @@ public class QuellSchrittView extends AbstractSchrittView {
     }
 
     public QuellSchrittView(SchrittSequenzView parent, SourceStepModel_V002 model) {
-      super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED);
-      setBackgroundUDBL(new Color(model.color));
+      super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade);
       this.id = model.id;
     }
 
@@ -40,7 +39,7 @@ public class QuellSchrittView extends AbstractSchrittView {
           id,
             currentStepNumber(),
             getEditorContent(formatierterText),
-            getBackground().getRGB(),
+            shadeColorForModel(),
             changeInfo,
             getSourceStepId(),
             getDecorated()

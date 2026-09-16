@@ -39,10 +39,9 @@ public class IfSchrittView extends IfElseSchrittView {
 	}
 
 	public IfSchrittView(SchrittSequenzView parent, IfStepModel_V002 model) {
-		super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED);
+		super(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade);
 		initIfSequenz(new ZweigSchrittSequenzView(this, StepNumber.EMPTY, EditorContentModel_V002.empty(), this.changeInfo));
 		initElseSequenz(new ZweigSchrittSequenzView(this, model.ifSequence));
-		this.setBackgroundUDBL(new Color(model.color));
 		ifBreiteSetzen(model.emptyWidth);
 		klappen.init(model.collapsed);
 		this.id = model.id;
@@ -101,7 +100,7 @@ public class IfSchrittView extends IfElseSchrittView {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			getDecorated(),
 			klappen.isSelected(),
 			changeInfo,

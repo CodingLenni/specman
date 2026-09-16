@@ -49,8 +49,8 @@ public class SubsequenzSchrittView extends AbstractSchrittView {
 		}
 	}
 
-	private SubsequenzSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo) {
-		super(parent, content, stepId, changeInfo);
+	private SubsequenzSchrittView(SchrittSequenzView parent, specman.model.v002.EditorContentModel_V002 content, String stepId, ChangeInfo changeInfo, Integer shade) {
+		super(parent, content, stepId, changeInfo, shade);
 		initSubsequenzPanel();
 	}
 
@@ -70,9 +70,8 @@ public class SubsequenzSchrittView extends AbstractSchrittView {
 	}
 
 	public SubsequenzSchrittView(SchrittSequenzView parent, SubsequenceStepModel_V002 model) {
-		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED);
+		this(parent, model.content, model.id, model.changeInfo != null ? model.changeInfo.toChangeInfo() : ChangeInfo.UNTRACKED, model.shade);
 		initSubsequenz(new SchrittSequenzView(this, model.subsequence), model.flatNumbering);
-		setBackgroundUDBL(new Color(model.color));
 		klappen.init(model.collapsed);
 		this.id = model.id;
 	}
@@ -147,7 +146,7 @@ public class SubsequenzSchrittView extends AbstractSchrittView {
 			id,
 			currentStepNumber(),
 			getEditorContent(formatierterText),
-			getBackground().getRGB(),
+			shadeColorForModel(),
 			changeInfo,
 			klappen.isSelected(),
 			subsequenz.generiereSchrittSequenzModel(formatierterText),

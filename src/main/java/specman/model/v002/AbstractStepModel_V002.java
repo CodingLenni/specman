@@ -33,7 +33,7 @@ public abstract class AbstractStepModel_V002 {
 
     public final String id;
     public final EditorContentModel_V002 content;
-    public final int color;
+    public final Integer shade;
     public final ChangeInfoModel_V002 changeInfo;
     public final String sourceStepId;
     public final RoundedBorderDecorationStyle decorationStyle;
@@ -43,7 +43,7 @@ public abstract class AbstractStepModel_V002 {
     @Deprecated AbstractStepModel_V002() { // For Jackson only
         id = null;
         content = null;
-        color = 0;
+        shade = null;
         changeInfo = null;
         sourceStepId = null;
         decorationStyle = null;
@@ -54,14 +54,14 @@ public abstract class AbstractStepModel_V002 {
             String id,
             String stepNumber,
             EditorContentModel_V002 content,
-            int color,
+            Integer shade,
             ChangeInfo changeInfo,
             String sourceStepId,
             RoundedBorderDecorationStyle decorationStyle) {
         this.id = id;
         this.stepNumber = stepNumber;
         this.content = content;
-        this.color = color;
+        this.shade = shade;
         this.changeInfo = ChangeInfoModel_V002.from(changeInfo);
         this.sourceStepId = sourceStepId;
         this.decorationStyle = decorationStyle;
