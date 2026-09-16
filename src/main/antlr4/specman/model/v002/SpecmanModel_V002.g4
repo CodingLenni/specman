@@ -99,50 +99,50 @@ step
 
 // change=(type, changeset) is an optional inline parameter for ChangeInfoModel_V002.
 simpleStep
-    : 'simple' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? ')' (';' | '{' editContainerTail '}')
+    : 'simple' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // UI convention: break text is single-line, but the model allows extra areas.
 breakStep
-    : 'break' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? ')' (';' | '{' editContainerTail '}')
+    : 'break' '(' stepNum ',' stepId ',' editContainerHead (',' changeParam)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // Source step (Quellschritt): the ghost left behind when a step is moved in change mode.
 // The changeset parameter (ID) is mandatory; sourceStep= links to the moved (target) step.
 sourceStep
-    : 'source' '(' stepNum ',' stepId ',' editContainerHead ',' ID (',' 'sourceStep' '=' STEP_ID)? ')' (';' | '{' editContainerTail '}')
+    : 'source' '(' stepNum ',' stepId ',' editContainerHead ',' ID (',' 'sourceStep' '=' STEP_ID)? (',' decoParam)? ')' (';' | '{' editContainerTail '}')
     ;
 
 // barWidth preserves the user-set width of the loop bar in pixels.
 whileStep
-    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 doWhileStep
-    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail step+ '}'
+    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // ifRatio preserves the user-set width ratio of the if-branch vs. total (as percentage).
 ifElseStep
-    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' changeParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
+    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
     ;
 
 // emptyWidth preserves the user-set width of the empty else area in pixels.
 ifStep
-    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' changeParam)? ')' '{' editContainerTail ifBranch '}'
+    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
     ;
 
 // editContainerTail covers extra areas of the condition content (e.g. a condition list).
 // Requires exactly one defaultBranch and at least two caseBranches.
 // cols=[...] preserves the user-set column width ratios (one entry per branch incl. default).
 caseStep
-    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' changeParam)? ')'
+    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' changeParam)? (',' decoParam)? ')'
       '{' editContainerTail defaultBranch caseBranch caseBranch+ '}'
     ;
 
 // flat=true preserves the flat-numbering flag as an inline parameter, consistent with other optionals.
 subsequenceStep
-    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchBlock* '}'
     ;
 
 // Branch headings are EditorContentModel_V002 — full EditContainer pattern.
@@ -268,6 +268,11 @@ changeParam
     : 'change' '=' '(' changeType ',' ID (',' 'sourceStep' '=' STEP_ID)? ')'
     ;
 
+// deco=Full or deco=Co — omitted when decorationStyle is None (the default).
+decoParam
+    : 'deco' '=' ID
+    ;
+
 changeType
     : 'added'
     | 'removed'
@@ -346,6 +351,7 @@ KW_TYPE            : 'type' ;
 KW_CHANGE          : 'change' ;
 KW_SOURCE          : 'source' ;
 KW_SOURCE_STEP     : 'sourceStep' ;
+KW_DECO            : 'deco' ;
 KW_CHANGE_MODE     : 'changeModeEnabled' ;
 KW_CHANGESET_NAME  : 'changeSetName' ;
 KW_PDF_OPTIONS     : 'pdfOptions' ;

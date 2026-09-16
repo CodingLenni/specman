@@ -316,7 +316,7 @@ public class ModelParser_V002 {
             -1,
             buildChangeInfo(ctx.changeParam()),
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
     }
 
     private SourceStepModel_V002 buildSourceStepFromLegacy(String id, String stepNum,
@@ -345,7 +345,7 @@ public class ModelParser_V002 {
             -1,
             new ChangeInfo(Aenderungsart.Quellschritt, cs),
             targetStepId,
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
     }
 
     private BreakStepModel_V002 buildBreakStep(SpecmanModel_V002Parser.BreakStepContext ctx,
@@ -360,7 +360,7 @@ public class ModelParser_V002 {
             -1,
             buildChangeInfo(ctx.changeParam()),
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
     }
 
     private WhileStepModel_V002 buildWhileStep(SpecmanModel_V002Parser.WhileStepContext ctx) {
@@ -376,7 +376,7 @@ public class ModelParser_V002 {
             buildLoopSequence(ctx.step(), ctx.catchBlock()),
             barWidth,
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
     }
 
     private DoWhileStepModel_V002 buildDoWhileStep(SpecmanModel_V002Parser.DoWhileStepContext ctx) {
@@ -392,7 +392,7 @@ public class ModelParser_V002 {
             buildLoopSequence(ctx.step(), List.of()),
             barWidth,
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
     }
 
     private IfElseStepModel_V002 buildIfElseStep(SpecmanModel_V002Parser.IfElseStepContext ctx) {
@@ -410,7 +410,7 @@ public class ModelParser_V002 {
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
-            RoundedBorderDecorationStyle.None,
+            buildDecorationStyle(ctx.decoParam()),
             false,
             buildChangeInfo(ctx.changeParam()),
             ifSeq,
@@ -430,7 +430,7 @@ public class ModelParser_V002 {
             ctx.stepNum().getText(),
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
-            RoundedBorderDecorationStyle.None,
+            buildDecorationStyle(ctx.decoParam()),
             false,
             buildChangeInfo(ctx.changeParam()),
             ifSeq,
@@ -468,7 +468,7 @@ public class ModelParser_V002 {
             defaultSeq,
             columnWidthRatios,
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None);
+            buildDecorationStyle(ctx.decoParam()));
         for (SpecmanModel_V002Parser.CaseBranchContext cb : ctx.caseBranch()) {
             step.addCase(buildBranch(cb.editContainerHead(), cb.editContainerTail(), cb.changeParam(), cb.step(), List.of()));
         }
@@ -486,7 +486,7 @@ public class ModelParser_V002 {
             false,
             buildLoopSequence(ctx.step(), ctx.catchBlock()),
             buildSourceStepId(ctx.changeParam()),
-            RoundedBorderDecorationStyle.None,
+            buildDecorationStyle(ctx.decoParam()),
             flat);
     }
 
@@ -657,6 +657,13 @@ public class ModelParser_V002 {
             return null;
         }
         return ctx.STEP_ID().getText();
+    }
+
+    private RoundedBorderDecorationStyle buildDecorationStyle(SpecmanModel_V002Parser.DecoParamContext ctx) {
+        if (ctx == null) {
+            return RoundedBorderDecorationStyle.None;
+        }
+        return RoundedBorderDecorationStyle.valueOf(ctx.ID().getText());
     }
 
     // -----------------------------------------------------------------------

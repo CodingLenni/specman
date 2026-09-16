@@ -26,6 +26,7 @@ import specman.model.v002.SubsequenceStepModel_V002;
 import specman.model.v002.TableEditAreaModel_V002;
 import specman.model.v002.TextEditAreaModel_V002;
 import specman.model.v002.WhileStepModel_V002;
+import specman.view.RoundedBorderDecorationStyle;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -341,6 +342,13 @@ public class ModelSerializer_V002 {
         return result + ")";
     }
 
+    private String decoParam(AbstractStepModel_V002 step) {
+        if (step.decorationStyle == null || step.decorationStyle == RoundedBorderDecorationStyle.None) {
+            return null;
+        }
+        return DECO + "=" + step.decorationStyle.name();
+    }
+
     // ---- Step number ----
 
     private String stepNum(AbstractStepModel_V002 step) {
@@ -395,28 +403,29 @@ public class ModelSerializer_V002 {
             : null;
         boolean hasExtraAreas = hasContent(step.content) && step.content.areas.size() > 1;
         if (hasExtraAreas) {
-            blockOpen(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam);
+            blockOpen(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam, decoParam(step));
             appendEditContainerTail(step.content, 1);
             blockClose();
         } else {
-            block(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam);
+            block(SOURCE, stepNum(step), stepId(step), editContainerHead(step.content), cs, targetParam, decoParam(step));
         }
     }
 
-    private void appendLeafStep(ModelKeyword_V002 keyword, AbstractStepModel_V002 step) {        boolean hasExtraAreas = hasContent(step.content) && step.content.areas.size() > 1;
+    private void appendLeafStep(ModelKeyword_V002 keyword, AbstractStepModel_V002 step) {
+        boolean hasExtraAreas = hasContent(step.content) && step.content.areas.size() > 1;
         if (hasExtraAreas) {
-            blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), changeAnno(step.changeInfo, step.sourceStepId));
+            blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
             appendEditContainerTail(step.content, 1);
             blockClose();
         } else {
-            block(keyword, stepNum(step), stepId(step), editContainerHead(step.content), changeAnno(step.changeInfo, step.sourceStepId));
+            block(keyword, stepNum(step), stepId(step), editContainerHead(step.content), changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
         }
     }
 
     private void appendLoopStep(ModelKeyword_V002 keyword, StepSequenceModel_V002 loopSeq,
                                 AbstractStepModel_V002 step,
                                 Map<String, String> idToNum, boolean withCatch, String extraParam) {
-        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam, changeAnno(step.changeInfo, step.sourceStepId));
+        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam, changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
         appendEditContainerTail(step.content, 1);
         appendSteps(loopSeq, idToNum);
         if (withCatch && loopSeq != null) {
@@ -431,7 +440,8 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           String.format(java.util.Locale.US, IF_RATIO + "=%.2f%%", step.ifWidthRatio * 100),
-          changeAnno(step.changeInfo, step.sourceStepId)
+          changeAnno(step.changeInfo, step.sourceStepId),
+          decoParam(step)
         );
         appendEditContainerTail(step.content, 1);
         appendBranch(IF_BRANCH, step.ifSequence, idToNum, true);
@@ -473,7 +483,8 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           EMPTY_WIDTH + "=" + step.emptyWidth,
-          changeAnno(step.changeInfo, step.sourceStepId)
+          changeAnno(step.changeInfo, step.sourceStepId),
+          decoParam(step)
         );
 
         appendEditContainerTail(step.content, 1);
@@ -492,7 +503,7 @@ public class ModelSerializer_V002 {
             }
             cols = c.append("]").toString();
         }
-        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols, changeAnno(step.changeInfo, step.sourceStepId));
+        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols, changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
         appendEditContainerTail(step.content, 1);
         appendBranch(DEFAULT_BRANCH, step.defaultSequence, idToNum, false);
         if (step.caseSequences != null) {
@@ -509,7 +520,8 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           step.flatNumbering ? FLAT + "=true" : null,
-          changeAnno(step.changeInfo, step.sourceStepId)
+          changeAnno(step.changeInfo, step.sourceStepId),
+          decoParam(step)
         );
         appendEditContainerTail(step.content, 1);
         appendSteps(step.subsequence, idToNum);
