@@ -54,6 +54,7 @@ public interface EditorI extends FocusListener {
   void deleteStepADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
   void newStepPostInit(AbstractSchrittView newStep);
   void copyStepToClipboard(AbstractSchrittView step);
+  void cutStepToClipboard(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
   void pasteStepsAfter(AbstractSchrittView referenceStep);
   void moveBranchSequenceLeftADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
   void moveBranchSequenceRightADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);

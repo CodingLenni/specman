@@ -409,6 +409,9 @@ public class CatchBereich extends AbstractSchrittView implements KlappbarerBerei
   }
 
   @Override
+  public boolean allowsClipboardOperations() { return false; }
+
+  @Override
   public DropTarget findHeadingDropTarget(LocalCursor localCursor, DragSource dragSource) {
     if (dragSource.isCatchSequenceCreation()) {
       for (CatchSchrittSequenzView seq: catchSequences) {

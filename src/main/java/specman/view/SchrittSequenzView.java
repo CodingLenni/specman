@@ -25,9 +25,11 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static specman.Aenderungsart.Geloescht;
@@ -718,6 +720,23 @@ public class SchrittSequenzView {
 		List<BreakSchrittView> result = new ArrayList<>();
 		for (AbstractSchrittView schritt: schritte) {
 			result.addAll(schritt.queryUnlinkedBreakSteps());
+		}
+		return result;
+	}
+
+	public List<BreakSchrittView> queryLinkedBreakSteps() {
+		List<BreakSchrittView> result = new ArrayList<>();
+		for (AbstractSchrittView schritt: schritte) {
+			result.addAll(schritt.queryLinkedBreakSteps());
+		}
+		return result;
+	}
+
+	public Set<CatchBereich> queryCatchBereiche() {
+		Set<CatchBereich> result = new HashSet<>();
+		result.add(catchBereich);
+		for (AbstractSchrittView schritt : schritte) {
+			result.addAll(schritt.queryCatchBereiche());
 		}
 		return result;
 	}

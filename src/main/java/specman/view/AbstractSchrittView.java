@@ -47,7 +47,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 import static specman.Aenderungsart.Geloescht;
@@ -610,6 +613,27 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 		return result;
 	}
 
+	public List<BreakSchrittView> queryLinkedBreakSteps() {
+		List<BreakSchrittView> result = new ArrayList<>();
+		unterSequenzen().forEach(seq -> result.addAll(seq.queryLinkedBreakSteps()));
+		return result;
+	}
+
+	public Set<CatchBereich> queryCatchBereiche() {
+		Set<CatchBereich> result = new HashSet<>();
+		unterSequenzen().forEach(seq -> result.addAll(seq.queryCatchBereiche()));
+		return result;
+	}
+
+	// Returns Break steps whose linked Catch sequence is located outside this step's subtree.
+	// Only those indicate that cutting this step would destroy content the user cannot recover.
+	public List<BreakSchrittView> queryExternallyLinkedBreakSteps() {
+		Set<CatchBereich> internalCatchBereiche = queryCatchBereiche();
+		return queryLinkedBreakSteps().stream()
+				.filter(breakStep -> !internalCatchBereiche.contains(breakStep.linkedCatchBereich()))
+				.collect(Collectors.toList());
+	}
+
   public boolean refersToOtherStep() { return false; }
 
   public Boolean getFlatNumbering() { return null; }
@@ -667,4 +691,6 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
   public boolean allowsDeletion(StepnumberLabel initiatingLabel) {
     return getParent().allowsStepDeletion() && !changeInfo.isDeleted();
   }
+
+  public boolean allowsClipboardOperations() { return true; }
 }

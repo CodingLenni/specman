@@ -16,6 +16,7 @@ public class StepnumberContextMenu implements MouseListener {
   private final JPopupMenu popup;
   private final JMenuItem delete;
   private final JMenuItem copy;
+  private final JMenuItem cut;
   private final JMenuItem paste;
   private final JMenuItem left;
   private final JMenuItem right;
@@ -31,6 +32,7 @@ public class StepnumberContextMenu implements MouseListener {
     popup = new JPopupMenu();
     delete = createDeleteItem();
     copy = createCopyItem();
+    cut = createCutItem();
     paste = createPasteItem();
     left = createLeftItem();
     right = createRightItem();
@@ -87,6 +89,10 @@ public class StepnumberContextMenu implements MouseListener {
     return createItem("Copy", e -> editor().copyStepToClipboard(currentStep));
   }
 
+  private JMenuItem createCutItem() {
+    return createItem("Cut", e -> editor().cutStepToClipboard(currentStep, initiatingLabel));
+  }
+
   private JMenuItem createPasteItem() {
     return createItem("Paste", e -> editor().pasteStepsAfter(currentStep));
   }
@@ -125,6 +131,10 @@ public class StepnumberContextMenu implements MouseListener {
     this.currentStep = currentStep;
     this.initiatingLabel = initiatingLabel;
     this.delete.setEnabled(currentStep.allowsDeletion(initiatingLabel));
+    boolean clipboardAllowed = currentStep.allowsClipboardOperations();
+    this.copy.setEnabled(clipboardAllowed);
+    this.cut.setEnabled(clipboardAllowed);
+    this.paste.setEnabled(clipboardAllowed);
     this.toggleFlatNumbering.setVisible(currentStep.getFlatNumbering() != null);
     if (toggleFlatNumbering.isVisible()) {
       toggleFlatNumbering.setState(currentStep.getFlatNumbering());

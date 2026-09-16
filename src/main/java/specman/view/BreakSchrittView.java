@@ -171,6 +171,11 @@ public class BreakSchrittView extends AbstractSchrittView {
 		return (catchHeading == null) ? Arrays.asList(this) : Arrays.asList();
 	}
 
+	@Override
+	public List<BreakSchrittView> queryLinkedBreakSteps() {
+		return (catchHeading != null) ? Arrays.asList(this) : Arrays.asList();
+	}
+
 	public void updateContent(EditorContentModel_V002 content, ChangeSet sourceChangeSet) {
 		editContainer.setEditorContent(content);
 		ChangeSet breakStepChangeSet = changeInfo.changeSet();
@@ -180,6 +185,10 @@ public class BreakSchrittView extends AbstractSchrittView {
 	}
 
   public boolean refersToOtherStep() { return catchHeading != null; }
+
+  CatchBereich linkedCatchBereich() {
+    return (CatchBereich) catchHeading.containingCatchSequence().getParent();
+  }
 
   public void scrollToCatch() {
     if (catchHeading != null) {

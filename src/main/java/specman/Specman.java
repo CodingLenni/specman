@@ -723,6 +723,7 @@ public class Specman extends JFrame implements EditorI, SpaltenContainerI, Specm
   }
 
   @Override public void copyStepToClipboard(AbstractSchrittView step) { new CopyStepOp(step).run(); }
+  @Override public void cutStepToClipboard(AbstractSchrittView step, InteractiveStepFragment initiatingFragment) { new CutStepOp(this, step, initiatingFragment).run(); }
 
   @Override public void pasteStepsAfter(AbstractSchrittView referenceStep) { new PasteStepsOp(this, referenceStep).run(); }
 
