@@ -68,6 +68,7 @@ public class Specman extends JFrame implements EditorI, SpaltenContainerI, Specm
   private AutoLoadOp autoLoad;
 
 	private static Specman instance;
+	public final String instanceId = java.util.UUID.randomUUID().toString();
 
 	public Specman(File fileToOpen) throws Exception {
 		instance = this;
@@ -591,6 +592,8 @@ public class Specman extends JFrame implements EditorI, SpaltenContainerI, Specm
 	@Override public int getZoomFactor() {
 		return zoomFaktor;
 	}
+
+	@Override public String instanceId() { return instanceId; }
 
 	@Override
 	public SchrittSequenzView getHauptSequenz() {

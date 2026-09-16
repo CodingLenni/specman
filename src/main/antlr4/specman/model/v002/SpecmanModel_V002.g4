@@ -45,6 +45,11 @@ diagram
     : settings? intro? mainSequence outro? EOF
     ;
 
+// Entry point for clipboard fragments — one or more steps without diagram envelope.
+stepFragment
+    : step+ EOF
+    ;
+
 // Diagram-level settings (DiagramModel_V002 scalar fields + PdfExportOptionsModel_V002).
 // All entries are optional; absent entries fall back to defaults when parsing.
 settings

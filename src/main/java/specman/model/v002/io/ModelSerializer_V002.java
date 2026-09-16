@@ -30,6 +30,7 @@ import specman.model.v002.TextEditAreaModel_V002;
 import specman.model.v002.WhileStepModel_V002;
 import specman.view.RoundedBorderDecorationStyle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -55,6 +56,33 @@ public class ModelSerializer_V002 {
     private String indent() {
         return "    ".repeat(indentionLevel);
     }
+
+    /** Serializes one or more steps to the SpecmanModel_V002 fragment format for clipboard use. */
+    public String serializeSteps(List<AbstractStepModel_V002> steps, String specmanInstanceId) {
+        sb.setLength(0);
+        indentionLevel = 0;
+        sb.append(COMMENT_INTRO).append(" specman-fragment instance=").append(specmanInstanceId).append("\n");
+        List<AbstractStepModel_V002> allSteps = new ArrayList<>();
+        for (AbstractStepModel_V002 step : steps) {
+            step.addStepRecursively(allSteps);
+        }
+        Map<String, String> idToNum = new LinkedHashMap<>();
+        for (AbstractStepModel_V002 step : allSteps) {
+            if (step.id != null && step.stepNumber != null) {
+                idToNum.put(step.id, step.stepNumber);
+            }
+        }
+        for (AbstractStepModel_V002 step : steps) {
+            appendStep(step, idToNum);
+        }
+        return sb.toString();
+    }
+
+    /** Serializes a single step to the SpecmanModel_V002 fragment format for clipboard use. */
+    public String serializeStep(AbstractStepModel_V002 step, String specmanInstanceId) {
+        return serializeSteps(List.of(step), specmanInstanceId);
+    }
+
 
     /** Serializes a DiagramModel_V002 to SpecmanModel_V002 text format. */
     public String serialize(DiagramModel_V002 model) {

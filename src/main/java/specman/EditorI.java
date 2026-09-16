@@ -24,6 +24,7 @@ public interface EditorI extends FocusListener {
 	void vertikalLinieSetzen(int x, SpaltenResizer spaltenResizer);
 	void diagrammLaden(File diagramFile);
 	int getZoomFactor();
+	String instanceId();
 	void instrumentWysEditor(JEditorPane ed, String initialText, Integer orientation);
 	void diagrammAktualisieren(EditArea editArea);
 	TextEditArea getLastFocusedTextArea();

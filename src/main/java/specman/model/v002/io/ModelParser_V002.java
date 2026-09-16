@@ -78,6 +78,38 @@ public class ModelParser_V002 {
         return buildDiagram(ctx, name);
     }
 
+    /** Parses a clipboard fragment (one or more steps without diagram envelope).
+     *  Header comment lines (starting with //) are tolerated and skipped by the lexer.
+     *  @throws ModelParseException if the content contains syntax errors. */
+    public List<AbstractStepModel_V002> parseSteps(String text) throws ModelParseException {
+        SpecmanModel_V002Lexer lexer = new SpecmanModel_V002Lexer(CharStreams.fromString(text));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        SpecmanModel_V002Parser parser = new SpecmanModel_V002Parser(tokens);
+
+        List<String> errors = new ArrayList<>();
+        parser.removeErrorListeners();
+        parser.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+                                    int line, int charPositionInLine,
+                                    String msg, RecognitionException e) {
+                errors.add("line " + line + ":" + charPositionInLine + " " + msg);
+            }
+        });
+
+        SpecmanModel_V002Parser.StepFragmentContext ctx = parser.stepFragment();
+        if (!errors.isEmpty()) {
+            throw new ModelParseException(errors.get(0));
+        }
+        List<SpecmanModel_V002Parser.StepContext> stepCtxs = ctx.step();
+        Map<String, String> breakStepIds = collectBreakStepIdsDeep(stepCtxs);
+        List<AbstractStepModel_V002> result = new ArrayList<>();
+        for (SpecmanModel_V002Parser.StepContext s : stepCtxs) {
+            result.add(buildStep(s, breakStepIds));
+        }
+        return result;
+    }
+
     // -----------------------------------------------------------------------
     // Name extraction (from comment line, before ANTLR strips comments)
     // -----------------------------------------------------------------------
