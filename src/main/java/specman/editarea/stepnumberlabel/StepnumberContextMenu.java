@@ -1,17 +1,12 @@
 package specman.editarea.stepnumberlabel;
 
 import specman.graphics.IconReader;
-import specman.Specman;
-import specman.model.v002.AbstractStepModel_V002;
-import specman.model.v002.io.ModelSerializer_V002;
 import specman.undo.UndoableFlatNumberingToggled;
 import specman.undo.manager.UndoRecording;
 import specman.view.AbstractSchrittView;
 import static specman.Specman.editor;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -21,6 +16,7 @@ public class StepnumberContextMenu implements MouseListener {
   private final JPopupMenu popup;
   private final JMenuItem delete;
   private final JMenuItem copy;
+  private final JMenuItem paste;
   private final JMenuItem left;
   private final JMenuItem right;
   private final JMenuItem up;
@@ -35,6 +31,7 @@ public class StepnumberContextMenu implements MouseListener {
     popup = new JPopupMenu();
     delete = createDeleteItem();
     copy = createCopyItem();
+    paste = createPasteItem();
     left = createLeftItem();
     right = createRightItem();
     up = createUpItem();
@@ -87,14 +84,11 @@ public class StepnumberContextMenu implements MouseListener {
   }
 
   private JMenuItem createCopyItem() {
-    return createItem("Copy", e -> copyCurrentStep());
+    return createItem("Copy", e -> editor().copyStepToClipboard(currentStep));
   }
 
-  private void copyCurrentStep() {
-    AbstractStepModel_V002 model = currentStep.generiereModel(true);
-    String text = new ModelSerializer_V002().serializeStep(model, editor().instanceId());
-    StringSelection selection = new StringSelection(text);
-    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+  private JMenuItem createPasteItem() {
+    return createItem("Paste", e -> editor().pasteStepsAfter(currentStep));
   }
 
   private JMenuItem createItem(String label, ActionListener actionListener) {

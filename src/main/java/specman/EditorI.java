@@ -52,6 +52,9 @@ public interface EditorI extends FocusListener {
   void resyncStepnumberStyleADBL();
   int showConfirmDialog(String message, String title, int optionType);
   void deleteStepADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
+  void newStepPostInit(AbstractSchrittView newStep);
+  void copyStepToClipboard(AbstractSchrittView step);
+  void pasteStepsAfter(AbstractSchrittView referenceStep);
   void moveBranchSequenceLeftADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
   void moveBranchSequenceRightADBL(AbstractSchrittView step, InteractiveStepFragment initiatingFragment);
   DragMouseAdapter createDragMouseAdapter();

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StepSequenceModel_V002 {
-    public final String id;
+    public String id;
     public final ChangeInfoModel_V002 changeInfo;
     public final List<AbstractStepModel_V002> steps;
     public final CatchAreaModel_V002 catchArea;

@@ -419,6 +419,8 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 		return number;
 	}
 
+	public String getId() { return id; }
+
 	protected String currentStepNumber() {
 		String num = number.toString();
 		return num.isEmpty() ? null : num;

@@ -3,7 +3,7 @@ package specman.model.v002;
 import specman.ChangeInfo;
 
 public class CoCatchModel_V002 {
-    public final String breakStepId;
+    public String breakStepId;
     public final EditorContentModel_V002 heading;
     public final ChangeInfoModel_V002 changeInfo;
 

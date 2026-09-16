@@ -31,11 +31,11 @@ import java.util.UUID;
 public abstract class AbstractStepModel_V002 {
     public static final int ID_LENGTH = 8;
 
-    public final String id;
+    public String id;
     public final EditorContentModel_V002 content;
     public final Integer shade;
     public final ChangeInfoModel_V002 changeInfo;
-    public final String sourceStepId;
+    public String sourceStepId;
     public final RoundedBorderDecorationStyle decorationStyle;
     /** Computed by ModelRenumberer_V002; not part of step identity. */
     public String stepNumber;
