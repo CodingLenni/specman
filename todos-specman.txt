@@ -1,16 +1,12 @@
-Multiple Changesets - Wichtig für nächste CR-Phase bei der ERSTEn
-x Merge von Changesets
-x Aufräumen der Codeänderungen
-x Aufräumen der Farben für Changesets in Hinblick auf Farbsehschwächen
-x Markups auf Datei beschränken sich immer auf ein einzelnes Zeichen
-x Geerbter Fehler: Änderungen zurücknehmen auf einem neu angelegten Schleifenschritt führt zu Fehlermeldung beim Versuch, den letzten Schritt
-   zu löschen, der ebenfalls as neu angelegt gekennzeichnet ist.
-x Auswahl des Changesets im Menu
-x Einfärben der Änderungsbutton entsprechende des ausgewählten Changesets
-x Ausgewählten Changeset im Modell festhalten
-x Markups für Änderungen im Modell mit Changeset-Nummer anreichern
-x Annahme / Ablehnung von Änderungen auf aktuellen Changeset beschränken
-x Editregeln bei konkurrierenden Änderungen
+Copy / Cut / Paste ganzer Schritte
+x Copy
+x Paste
+  x Referenzen auf nicht existierende Schritte als ungültig markieren
+  x Undo / Redo
+- Cut
+  - Warnmeldung bei drohendem Verlust von Catchs
+  - Undo / Redo
+- Icons für Kontextmenüpunkte
 
 Aus aktueller Anwendung
 - Beim Suchen wird die gefundene Stelle im Text nicht markiert. Könnte allerdings ein reines Linux-Problem sein.
@@ -108,7 +104,6 @@ Auf längere Sicht - nicht notwendig für ersten Go-Live:
 - Sonst-Zweig in Cases Entfernen / Hinzufügen
 - Button-Enabling
 - Spellchecker
-- Mehrere Changesets
 - Annehmen *einzelner* Änderungen
 
 Tipps und Tricks
