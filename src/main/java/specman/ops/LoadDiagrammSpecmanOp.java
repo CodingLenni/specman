@@ -318,18 +318,12 @@ public class LoadDiagrammSpecmanOp extends AbstractInitSpecmanOp {
 
   private void quellZielZuweisungV002(DiagramModel_V002 model) {
     for (AbstractStepModel_V002 step : model.queryAllSteps()) {
-      if (step.changeInfo == null || step.changeInfo.changetype != Aenderungsart.Zielschritt) {
-        continue;
-      }
-      if (step.sourceStepId == null) {
-        continue;
-      }
-      AbstractSchrittView zielView = getHauptSequenz().findViewByStepId(step.id);
-      AbstractSchrittView quellView = getHauptSequenz().findViewByStepId(
+      if (step.isTargetStep()) {
+        AbstractSchrittView zielView = getHauptSequenz().findViewByStepId(step.id);
+        QuellSchrittView quellView = (QuellSchrittView) getHauptSequenz().findViewByStepId(
           AbstractStepModel_V002.normalizeId(step.sourceStepId));
-      if (zielView != null && quellView instanceof QuellSchrittView) {
-        zielView.setQuellschrittUDBL((QuellSchrittView) quellView);
-        ((QuellSchrittView) quellView).setZielschritt(zielView);
+        zielView.setQuellschritt(quellView);
+        quellView.setZielschritt(zielView);
       }
     }
   }
