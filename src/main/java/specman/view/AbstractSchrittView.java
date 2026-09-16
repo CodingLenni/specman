@@ -226,7 +226,8 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public void setZielschrittStilUDBL() {
 		setAenderungsartUDBL(Zielschritt);
-		editContainer.setZielschrittStilUDBL(getQuellschritt().getNumber(), changeInfo.changeSet());
+		StepNumber quellNum = quellschritt != null ? quellschritt.getNumber() : null;
+		editContainer.setZielschrittStilUDBL(quellNum, changeInfo.changeSet());
 	}
 
 	public void alsGeloeschtMarkierenUDBL() {
