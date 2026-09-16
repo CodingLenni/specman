@@ -119,9 +119,9 @@ public class ModelParser_V002 {
         for (SpecmanModel_V002Parser.SettingEntryContext entry : ctx.settingEntry()) {
             String keyword = entry.start.getText();
             if (WIDTH.toString().equals(keyword)) {
-                s.width = Integer.parseInt(entry.STEP_NUM().getText());
+                s.width = Integer.parseInt(entry.INT().getText());
             } else if (ZOOM.toString().equals(keyword)) {
-                s.zoomFactor = Integer.parseInt(entry.STEP_NUM().getText());
+                s.zoomFactor = Integer.parseInt(entry.INT().getText());
             } else if (CHANGE_MODE.toString().equals(keyword)) {
                 s.changeModeEnabled = Boolean.parseBoolean(entry.boolVal().getText());
             } else if (CHANGESET_NAME.toString().equals(keyword)) {
@@ -245,7 +245,7 @@ public class ModelParser_V002 {
                 buildEditContainer(cc.editContainerHead(), null),
                 buildChangeInfo(cc.changeParam())));
         }
-        org.antlr.v4.runtime.tree.TerminalNode headingWidthNode = ctx.STEP_NUM();
+        org.antlr.v4.runtime.tree.TerminalNode headingWidthNode = ctx.INT();
         int headingWidth = headingWidthNode != null ? Integer.parseInt(headingWidthNode.getText()) : 18;
         CatchSequenceModel_V002 catchSeq = new CatchSequenceModel_V002(
             breakId, buildChangeInfo(ctx.changeParam()), heading, coCatches, headingWidth);
@@ -419,7 +419,7 @@ public class ModelParser_V002 {
     }
 
     private WhileStepModel_V002 buildWhileStep(SpecmanModel_V002Parser.WhileStepContext ctx) {
-        org.antlr.v4.runtime.tree.TerminalNode barWidthNode = ctx.STEP_NUM();
+        org.antlr.v4.runtime.tree.TerminalNode barWidthNode = ctx.INT();
         int barWidth = barWidthNode == null ? 18 : Integer.parseInt(barWidthNode.getText());
         return new WhileStepModel_V002(
             ctx.stepId().getText(),
@@ -435,7 +435,7 @@ public class ModelParser_V002 {
     }
 
     private DoWhileStepModel_V002 buildDoWhileStep(SpecmanModel_V002Parser.DoWhileStepContext ctx) {
-        org.antlr.v4.runtime.tree.TerminalNode barWidthNode = ctx.STEP_NUM();
+        org.antlr.v4.runtime.tree.TerminalNode barWidthNode = ctx.INT();
         int barWidth = barWidthNode == null ? 18 : Integer.parseInt(barWidthNode.getText());
         return new DoWhileStepModel_V002(
             ctx.stepId().getText(),
@@ -478,7 +478,7 @@ public class ModelParser_V002 {
         SpecmanModel_V002Parser.IfBranchContext ifCtx = ctx.ifBranch();
         BranchSequenceModel_V002 ifSeq = buildBranch(
             ifCtx.editContainerHead(), ifCtx.editContainerTail(), ifCtx.changeParam(), ifCtx.step(), ifCtx.catchArea());
-        org.antlr.v4.runtime.tree.TerminalNode emptyWidthNode = ctx.STEP_NUM();
+        org.antlr.v4.runtime.tree.TerminalNode emptyWidthNode = ctx.INT();
         int emptyWidth = emptyWidthNode == null ? 20 : Integer.parseInt(emptyWidthNode.getText());
         return new IfStepModel_V002(
             ctx.stepId().getText(),
@@ -623,8 +623,8 @@ public class ModelParser_V002 {
     private List<Markup_V002> buildMarkups(SpecmanModel_V002Parser.MarkupsAttrContext ctx) {
         List<Markup_V002> result = new ArrayList<>();
         for (SpecmanModel_V002Parser.MarkupContext m : ctx.markup()) {
-            int from = Integer.parseInt(m.STEP_NUM(0).getText());
-            int to = Integer.parseInt(m.STEP_NUM(1).getText());
+            int from = Integer.parseInt(m.INT(0).getText());
+            int to = Integer.parseInt(m.INT(1).getText());
             MarkupType type = MarkupType.valueOf(m.markupType().getText());
             String changeset = m.ID() != null ? m.ID().getText() : null;
             result.add(new Markup_V002(from, to, type, changeset));

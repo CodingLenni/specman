@@ -52,8 +52,8 @@ settings
     ;
 
 settingEntry
-    : 'width'             '=' STEP_NUM
-    | 'zoom'              '=' STEP_NUM
+    : 'width'             '=' INT
+    | 'zoom'              '=' INT
     | 'changeModeEnabled' '=' boolVal
     | 'changeSetName'     '=' ID
     | 'pdfOptions'        '{' pdfOptionEntry* '}'
@@ -115,11 +115,11 @@ sourceStep
 
 // barWidth preserves the user-set width of the loop bar in pixels.
 whileStep
-    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
+    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 doWhileStep
-    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
+    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // ifRatio preserves the user-set width ratio of the if-branch vs. total (as percentage).
@@ -129,7 +129,7 @@ ifElseStep
 
 // emptyWidth preserves the user-set width of the empty else area in pixels.
 ifStep
-    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
+    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' INT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
     ;
 
 // editContainerTail covers extra areas of the condition content (e.g. a condition list).
@@ -179,7 +179,7 @@ catchAreaParam
 
 // Catch/coCatch headings are EditorContentModel_V002 — full EditContainer pattern.
 catchBlock
-    : 'catch' '(' stepNum ',' editContainerHead (',' changeParam)? (',' 'headingWidth' '=' STEP_NUM)? ')' '{' editContainerTail coCatch* step+ '}'
+    : 'catch' '(' stepNum ',' editContainerHead (',' changeParam)? (',' 'headingWidth' '=' INT)? ')' '{' editContainerTail coCatch* step+ '}'
     ;
 
 coCatch
@@ -266,7 +266,7 @@ markupsAttr
 
 // Markup_V002: from, to, type, optional changeset name.
 markup
-    : '(' STEP_NUM ',' STEP_NUM ',' markupType (',' ID)? ')'
+    : '(' INT ',' INT ',' markupType (',' ID)? ')'
     ;
 
 markupType
@@ -300,10 +300,10 @@ boolVal
     | 'false'
     ;
 
-// StepNumber — dot-separated integers, optional single lower-case letter suffix
-// for agent-assigned placeholder numbers (e.g. 3.2.4.2b).
+// StepNumber — INT for plain integers (1, 10), STEP_NUM for dotted/lettered (2.3, 3.2.4.2b).
 stepNum
-    : STEP_NUM
+    : INT
+    | STEP_NUM
     ;
 
 // 8 lower-case hex characters (AbstractStepModel_V002.ID_LENGTH = 8).
@@ -315,11 +315,15 @@ stepId
 // Lexer rules
 // ============================================================
 
-// Step ID: exactly 8 lower-case hex characters
+// Step ID: exactly 8 lower-case hex characters — must come before INT to win on same-length ties.
 STEP_ID     : [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f] ;
 
-// Step number: 1, 2.3, 3.2.4.2b, 3.2.4.2b.1 (letter may appear mid-sequence)
-STEP_NUM    : [0-9]+ [a-z]? ('.' [0-9]+ [a-z]?)* ;
+// Positive integer, e.g. 18, 700, 100 — used for pixel widths and other numeric params.
+// Must come before STEP_NUM so plain integers are tokenized as INT (same-length rule wins by order).
+INT         : [0-9]+ ;
+
+// Step number: dotted or lettered — 2.3, 3.2.4.2b, 3b (plain integers are INT, not STEP_NUM)
+STEP_NUM    : [0-9]+ [a-z] ('.' [0-9]+ [a-z]?)* | [0-9]+ ('.' [0-9]+ [a-z]?)+ ;
 
 // Percentage value, e.g. 100%, 39.07%
 PERCENT     : [0-9]+ ('.' [0-9]+)? '%' ;

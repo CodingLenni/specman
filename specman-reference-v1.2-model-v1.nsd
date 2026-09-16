@@ -792,7 +792,7 @@
             } ] ] ]
           }
         },
-        "ifBreitenanteil" : 0.20579268
+        "ifBreitenanteil" : 0.1875
       } ], [ "specman.model.v001.BreakSchrittModel_V001", {
         "id" : {
           "nummern" : [ "java.util.ArrayList", [ 15 ] ]
@@ -1604,8 +1604,8 @@
         "nummer" : "32",
         "inhalt" : {
           "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
-            "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    <b>Subsequence with collapsed catch sequence</b>\n  </body>\n</html>\n",
-            "plainText" : "\nSubsequence with collapsed catch sequence",
+            "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    <b>Subsequence with special catch sequence</b>\n  </body>\n</html>\n",
+            "plainText" : "\nSubsequence with special catch sequence",
             "markups" : [ "java.util.ArrayList", [ ] ],
             "aenderungsart" : "Untracked",
             "changeInfo" : {
@@ -1639,8 +1639,8 @@
             "nummer" : "32.1",
             "inhalt" : {
               "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
-                "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    The catch area of the subsequence has a modified width ration of its \n    branches and the catch area is collapsed\n  </body>\n</html>\n",
-                "plainText" : "\nThe catch area of the subsequence has a modified width ration of its branches and the catch area is collapsed",
+                "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    The catch area of the subsequence has a modified width ratio of its \n    branches, a modified righ bar width in the co-catch, and the catch area is \n    collapsed\n  </body>\n</html>\n",
+                "plainText" : "\nThe catch area of the subsequence has a modified width ratio of its branches, a modified righ bar width in the co-catch, and the catch area is collapsed",
                 "markups" : [ "java.util.ArrayList", [ ] ],
                 "aenderungsart" : "Untracked",
                 "changeInfo" : {
@@ -1691,6 +1691,31 @@
               "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
                 "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    <b>Sub X2</b>\n  </body>\n</html>\n",
                 "plainText" : "\nSub X2",
+                "markups" : [ "java.util.ArrayList", [ ] ],
+                "aenderungsart" : "Untracked",
+                "changeInfo" : {
+                  "changetype" : "Untracked",
+                  "changeset" : null
+                }
+              } ] ] ]
+            },
+            "farbe" : -1,
+            "aenderungsart" : "Untracked",
+            "changeInfo" : {
+              "changetype" : "Untracked",
+              "changeset" : null
+            },
+            "quellschrittID" : null,
+            "decorationStyle" : "None"
+          } ], [ "specman.model.v001.BreakSchrittModel_V001", {
+            "id" : {
+              "nummern" : [ "java.util.ArrayList", [ 32, 4 ] ]
+            },
+            "nummer" : "32.4",
+            "inhalt" : {
+              "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
+                "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    <b>Sub X3</b>\n  </body>\n</html>\n",
+                "plainText" : "\nSub X3",
                 "markups" : [ "java.util.ArrayList", [ ] ],
                 "aenderungsart" : "Untracked",
                 "changeInfo" : {
@@ -1775,8 +1800,8 @@
                 "nummer" : "32.3.1",
                 "inhalt" : {
                   "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
-                    "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    Big width\n  </body>\n</html>\n",
-                    "plainText" : "\nBig width",
+                    "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    Big width, big right bar width\n  </body>\n</html>\n",
+                    "plainText" : "\nBig width, big right bar width",
                     "markups" : [ "java.util.ArrayList", [ ] ],
                     "aenderungsart" : "Untracked",
                     "changeInfo" : {
@@ -1807,8 +1832,29 @@
                   }
                 } ] ] ]
               },
-              "coCatches" : [ "java.util.ArrayList", [ ] ],
-              "headingRightBarWidth" : 18
+              "coCatches" : [ "java.util.ArrayList", [ {
+                "breakStepId" : {
+                  "nummern" : [ "java.util.ArrayList", [ 32, 4 ] ]
+                },
+                "heading" : {
+                  "areas" : [ "java.util.ArrayList", [ [ "specman.model.v001.TextEditAreaModel_V001", {
+                    "text" : "<html>\n  <head>\n    \n  </head>\n  <body>\n    <b>Sub X3</b>\n  </body>\n</html>\n",
+                    "plainText" : "\nSub X3",
+                    "markups" : [ "java.util.ArrayList", [ ] ],
+                    "aenderungsart" : "Untracked",
+                    "changeInfo" : {
+                      "changetype" : "Untracked",
+                      "changeset" : null
+                    }
+                  } ] ] ]
+                },
+                "changetype" : "Untracked",
+                "changeInfo" : {
+                  "changetype" : "Untracked",
+                  "changeset" : null
+                }
+              } ] ],
+              "headingRightBarWidth" : 65
             } ] ],
             "sequencesWidthPercent" : [ "java.util.ArrayList", [ 20, 79 ] ],
             "zugeklappt" : true
