@@ -653,12 +653,7 @@ public class Specman extends JFrame implements EditorI, SpaltenContainerI, Specm
 	 */
 	@Override
 	public AbstractSchrittView findStepByStepID(String stepID) {
-		AbstractSchrittView result = getHauptSequenz().findStepByStepID(stepID);
-		if (result == null) {
-			throw new RuntimeException("Could not find stepnumber '" + stepID + "'."
-					+ " Make sure not to search for an outdated stepnumber.");
-		}
-		return result;
+		return getHauptSequenz().findStepByStepID(stepID);
 	}
 
 	public boolean isKeyPressed(int keyCode) {

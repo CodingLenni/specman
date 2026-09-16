@@ -785,7 +785,13 @@ public class EditContainer extends JPanel {
       for (String stepID : stepIDs) {
         if (!StepnumberLink.isStepnumberLinkDefect(stepID)) {
           AbstractSchrittView step = editor.findStepByStepID(stepID);
-          step.registerStepnumberLink(referencingTextEditArea);
+          if (step == null) {
+            // The referenced step no longer exists — mark the link so the user can see it is broken
+            referencingTextEditArea.markStepnumberLinkAsDefect(stepID);
+          }
+          else {
+            step.registerStepnumberLink(referencingTextEditArea);
+          }
         }
       }
     }
