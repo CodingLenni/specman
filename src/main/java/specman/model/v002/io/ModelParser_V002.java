@@ -166,7 +166,7 @@ public class ModelParser_V002 {
         StepSequenceModel_V002 seq = new StepSequenceModel_V002(
             AbstractStepModel_V002.generateId(),
             ChangeInfo.untracked(),
-            buildCatchArea(ctx.catchBlock(), breakStepIds));
+            buildCatchAreaFromCtx(ctx.catchArea(), breakStepIds));
         for (SpecmanModel_V002Parser.StepContext s : ctx.step()) {
             seq.steps.add(buildStep(s, breakStepIds));
         }
@@ -245,8 +245,10 @@ public class ModelParser_V002 {
                 buildEditContainer(cc.editContainerHead(), null),
                 buildChangeInfo(cc.changeParam())));
         }
+        org.antlr.v4.runtime.tree.TerminalNode headingWidthNode = ctx.STEP_NUM();
+        int headingWidth = headingWidthNode != null ? Integer.parseInt(headingWidthNode.getText()) : 18;
         CatchSequenceModel_V002 catchSeq = new CatchSequenceModel_V002(
-            breakId, buildChangeInfo(ctx.changeParam()), heading, coCatches, 18);
+            breakId, buildChangeInfo(ctx.changeParam()), heading, coCatches, headingWidth);
         for (SpecmanModel_V002Parser.StepContext s : ctx.step()) {
             catchSeq.steps.add(buildStep(s, new LinkedHashMap<>()));
         }
@@ -257,13 +259,30 @@ public class ModelParser_V002 {
                                                   SpecmanModel_V002Parser.EditContainerTailContext tailCtx,
                                                   SpecmanModel_V002Parser.ChangeParamContext changeParamCtx,
                                                   List<SpecmanModel_V002Parser.StepContext> steps,
-                                                  List<SpecmanModel_V002Parser.CatchBlockContext> catches) {
+                                                  SpecmanModel_V002Parser.CatchAreaContext catchArea) {
         EditorContentModel_V002 heading = buildEditContainer(headCtx, tailCtx);
         Map<String, String> breakStepIds = collectBreakStepIdsDeep(steps);
         BranchSequenceModel_V002 seq = new BranchSequenceModel_V002(
             AbstractStepModel_V002.generateId(),
             buildChangeInfo(changeParamCtx),
-            buildCatchArea(catches, breakStepIds),
+            buildCatchAreaFromCtx(catchArea, breakStepIds),
+            heading);
+        for (SpecmanModel_V002Parser.StepContext s : steps) {
+            seq.steps.add(buildStep(s, breakStepIds));
+        }
+        return seq;
+    }
+
+    private BranchSequenceModel_V002 buildBranchNoCatch(SpecmanModel_V002Parser.EditContainerHeadContext headCtx,
+                                                         SpecmanModel_V002Parser.EditContainerTailContext tailCtx,
+                                                         SpecmanModel_V002Parser.ChangeParamContext changeParamCtx,
+                                                         List<SpecmanModel_V002Parser.StepContext> steps) {
+        EditorContentModel_V002 heading = buildEditContainer(headCtx, tailCtx);
+        Map<String, String> breakStepIds = collectBreakStepIdsDeep(steps);
+        BranchSequenceModel_V002 seq = new BranchSequenceModel_V002(
+            AbstractStepModel_V002.generateId(),
+            buildChangeInfo(changeParamCtx),
+            buildCatchArea(List.of(), breakStepIds),
             heading);
         for (SpecmanModel_V002Parser.StepContext s : steps) {
             seq.steps.add(buildStep(s, breakStepIds));
@@ -284,6 +303,42 @@ public class ModelParser_V002 {
         return seq;
     }
 
+    private StepSequenceModel_V002 buildLoopSequenceFromContent(List<SpecmanModel_V002Parser.StepContext> steps,
+                                                                 SpecmanModel_V002Parser.CatchAreaContext catchArea) {
+        Map<String, String> breakStepIds = collectBreakStepIdsDeep(steps);
+        StepSequenceModel_V002 seq = new StepSequenceModel_V002(
+            AbstractStepModel_V002.generateId(),
+            ChangeInfo.untracked(),
+            buildCatchAreaFromCtx(catchArea, breakStepIds));
+        for (SpecmanModel_V002Parser.StepContext s : steps) {
+            seq.steps.add(buildStep(s, breakStepIds));
+        }
+        return seq;
+    }
+
+    private CatchAreaModel_V002 buildCatchAreaFromCtx(SpecmanModel_V002Parser.CatchAreaContext ctx,
+                                                       Map<String, String> breakStepIds) {
+        if (ctx == null) {
+            return buildCatchArea(List.of(), breakStepIds);
+        }
+        boolean collapsed = false;
+        List<Integer> seqWidths = null;
+        for (SpecmanModel_V002Parser.CatchAreaParamContext param : ctx.catchAreaParam()) {
+            if ("collapsed".equals(param.start.getText())) {
+                collapsed = true;
+            } else if ("cols".equals(param.start.getText())) {
+                seqWidths = new ArrayList<>();
+                for (org.antlr.v4.runtime.tree.TerminalNode p : param.PERCENT()) {
+                    seqWidths.add(parsePercent(p.getText()));
+                }
+            }
+        }
+        CatchAreaModel_V002 area = new CatchAreaModel_V002(seqWidths, collapsed);
+        for (SpecmanModel_V002Parser.CatchBlockContext c : ctx.catchBlock()) {
+            area.catchSequences.add(buildCatchSequence(c, breakStepIds));
+        }
+        return area;
+    }
     // -----------------------------------------------------------------------
     // Steps
     // -----------------------------------------------------------------------
@@ -372,8 +427,8 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            false,
-            buildLoopSequence(ctx.step(), ctx.catchBlock()),
+            ctx.KW_COLLAPSED() != null,
+            buildLoopSequenceFromContent(ctx.step(), ctx.catchArea()),
             barWidth,
             buildSourceStepId(ctx.changeParam()),
             buildDecorationStyle(ctx.decoParam()));
@@ -388,7 +443,7 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            false,
+            ctx.KW_COLLAPSED() != null,
             buildLoopSequence(ctx.step(), List.of()),
             barWidth,
             buildSourceStepId(ctx.changeParam()),
@@ -399,9 +454,9 @@ public class ModelParser_V002 {
         SpecmanModel_V002Parser.IfBranchContext ifCtx = ctx.ifBranch();
         SpecmanModel_V002Parser.ElseBranchContext elseCtx = ctx.elseBranch();
         BranchSequenceModel_V002 ifSeq = buildBranch(
-            ifCtx.editContainerHead(), ifCtx.editContainerTail(), ifCtx.changeParam(), ifCtx.step(), ifCtx.catchBlock());
+            ifCtx.editContainerHead(), ifCtx.editContainerTail(), ifCtx.changeParam(), ifCtx.step(), ifCtx.catchArea());
         BranchSequenceModel_V002 elseSeq = buildBranch(
-            elseCtx.editContainerHead(), elseCtx.editContainerTail(), elseCtx.changeParam(), elseCtx.step(), elseCtx.catchBlock());
+            elseCtx.editContainerHead(), elseCtx.editContainerTail(), elseCtx.changeParam(), elseCtx.step(), elseCtx.catchArea());
         org.antlr.v4.runtime.tree.TerminalNode percentNode = ctx.PERCENT();
         float ifWidthRatio = percentNode == null ? 0.5f
             : Float.parseFloat(percentNode.getText().replace("%", "")) / 100.0f;
@@ -411,7 +466,7 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildDecorationStyle(ctx.decoParam()),
-            false,
+            ctx.KW_COLLAPSED() != null,
             buildChangeInfo(ctx.changeParam()),
             ifSeq,
             elseSeq,
@@ -422,7 +477,7 @@ public class ModelParser_V002 {
     private IfStepModel_V002 buildIfStep(SpecmanModel_V002Parser.IfStepContext ctx) {
         SpecmanModel_V002Parser.IfBranchContext ifCtx = ctx.ifBranch();
         BranchSequenceModel_V002 ifSeq = buildBranch(
-            ifCtx.editContainerHead(), ifCtx.editContainerTail(), ifCtx.changeParam(), ifCtx.step(), ifCtx.catchBlock());
+            ifCtx.editContainerHead(), ifCtx.editContainerTail(), ifCtx.changeParam(), ifCtx.step(), ifCtx.catchArea());
         org.antlr.v4.runtime.tree.TerminalNode emptyWidthNode = ctx.STEP_NUM();
         int emptyWidth = emptyWidthNode == null ? 20 : Integer.parseInt(emptyWidthNode.getText());
         return new IfStepModel_V002(
@@ -431,7 +486,7 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildDecorationStyle(ctx.decoParam()),
-            false,
+            ctx.KW_COLLAPSED() != null,
             buildChangeInfo(ctx.changeParam()),
             ifSeq,
             emptyWidth,
@@ -440,8 +495,8 @@ public class ModelParser_V002 {
 
     private CaseStepModel_V002 buildCaseStep(SpecmanModel_V002Parser.CaseStepContext ctx) {
         SpecmanModel_V002Parser.DefaultBranchContext defCtx = ctx.defaultBranch();
-        BranchSequenceModel_V002 defaultSeq = buildBranch(
-            defCtx.editContainerHead(), defCtx.editContainerTail(), defCtx.changeParam(), defCtx.step(), List.of());
+        BranchSequenceModel_V002 defaultSeq = buildBranchNoCatch(
+            defCtx.editContainerHead(), defCtx.editContainerTail(), defCtx.changeParam(), defCtx.step());
         List<Float> columnWidthRatios;
         List<org.antlr.v4.runtime.tree.TerminalNode> percents = ctx.PERCENT();
         if (!percents.isEmpty()) {
@@ -464,13 +519,13 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            false,
+            ctx.KW_COLLAPSED() != null,
             defaultSeq,
             columnWidthRatios,
             buildSourceStepId(ctx.changeParam()),
             buildDecorationStyle(ctx.decoParam()));
         for (SpecmanModel_V002Parser.CaseBranchContext cb : ctx.caseBranch()) {
-            step.addCase(buildBranch(cb.editContainerHead(), cb.editContainerTail(), cb.changeParam(), cb.step(), List.of()));
+            step.addCase(buildBranchNoCatch(cb.editContainerHead(), cb.editContainerTail(), cb.changeParam(), cb.step()));
         }
         return step;
     }
@@ -483,8 +538,8 @@ public class ModelParser_V002 {
             buildStepContent(ctx.editContainerHead(), ctx.editContainerTail()),
             -1,
             buildChangeInfo(ctx.changeParam()),
-            false,
-            buildLoopSequence(ctx.step(), ctx.catchBlock()),
+            ctx.KW_COLLAPSED() != null,
+            buildLoopSequenceFromContent(ctx.step(), ctx.catchArea()),
             buildSourceStepId(ctx.changeParam()),
             buildDecorationStyle(ctx.decoParam()),
             flat);

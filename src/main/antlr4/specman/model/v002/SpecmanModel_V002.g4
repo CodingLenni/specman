@@ -77,7 +77,7 @@ outro
     ;
 
 mainSequence
-    : 'mainSequence' '{' step+ catchBlock* '}'
+    : 'mainSequence' '{' step+ catchArea? '}'
     ;
 
 // --- Steps ---
@@ -115,43 +115,43 @@ sourceStep
 
 // barWidth preserves the user-set width of the loop bar in pixels.
 whileStep
-    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'while' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 doWhileStep
-    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
+    : 'doWhile' '(' stepNum ',' stepId ',' editContainerHead (',' 'barWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ '}'
     ;
 
 // ifRatio preserves the user-set width ratio of the if-branch vs. total (as percentage).
 ifElseStep
-    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
+    : 'ifElse' '(' stepNum ',' stepId ',' editContainerHead (',' 'ifRatio' '=' PERCENT)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch elseBranch '}'
     ;
 
 // emptyWidth preserves the user-set width of the empty else area in pixels.
 ifStep
-    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
+    : 'if' '(' stepNum ',' stepId ',' editContainerHead (',' 'emptyWidth' '=' STEP_NUM)? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail ifBranch '}'
     ;
 
 // editContainerTail covers extra areas of the condition content (e.g. a condition list).
 // Requires exactly one defaultBranch and at least two caseBranches.
 // cols=[...] preserves the user-set column width ratios (one entry per branch incl. default).
 caseStep
-    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' changeParam)? (',' decoParam)? ')'
+    : 'case' '(' stepNum ',' stepId ',' editContainerHead (',' 'cols' '=' '[' PERCENT (',' PERCENT)* ']')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')'
       '{' editContainerTail defaultBranch caseBranch caseBranch+ '}'
     ;
 
 // flat=true preserves the flat-numbering flag as an inline parameter, consistent with other optionals.
 subsequenceStep
-    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'subsequence' '(' stepNum ',' stepId ',' editContainerHead (',' 'flat' '=' 'true')? (',' 'collapsed' '=' 'true')? (',' changeParam)? (',' decoParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 // Branch headings are EditorContentModel_V002 — full EditContainer pattern.
 ifBranch
-    : 'if_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'if_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 elseBranch
-    : 'else_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchBlock* '}'
+    : 'else_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ catchArea? '}'
     ;
 
 defaultBranch
@@ -162,9 +162,24 @@ caseBranch
     : 'case_branch' '(' editContainerHead (',' changeParam)? ')' '{' editContainerTail step+ '}'
     ;
 
+// catchArea wraps catch sequences with optional attributes.
+// Omitted entirely when there are no catch sequences.
+// Bare catch blocks (without the catchArea wrapper) are also accepted for
+// files saved before the catchArea syntax was introduced; the serializer
+// always emits the wrapper form so files are upgraded on next save.
+catchArea
+    : 'catchArea' ('(' catchAreaParam (',' catchAreaParam)* ')')? '{' catchBlock+ '}'
+    | catchBlock+
+    ;
+
+catchAreaParam
+    : 'collapsed' '=' 'true'
+    | 'cols' '=' '[' PERCENT (',' PERCENT)* ']'
+    ;
+
 // Catch/coCatch headings are EditorContentModel_V002 — full EditContainer pattern.
 catchBlock
-    : 'catch' '(' stepNum ',' editContainerHead (',' changeParam)? ')' '{' editContainerTail coCatch* step+ '}'
+    : 'catch' '(' stepNum ',' editContainerHead (',' changeParam)? (',' 'headingWidth' '=' STEP_NUM)? ')' '{' editContainerTail coCatch* step+ '}'
     ;
 
 coCatch
@@ -352,6 +367,9 @@ KW_CHANGE          : 'change' ;
 KW_SOURCE          : 'source' ;
 KW_SOURCE_STEP     : 'sourceStep' ;
 KW_DECO            : 'deco' ;
+KW_COLLAPSED       : 'collapsed' ;
+KW_HEADING_WIDTH   : 'headingWidth' ;
+KW_CATCH_AREA      : 'catchArea' ;
 KW_CHANGE_MODE     : 'changeModeEnabled' ;
 KW_CHANGESET_NAME  : 'changeSetName' ;
 KW_PDF_OPTIONS     : 'pdfOptions' ;

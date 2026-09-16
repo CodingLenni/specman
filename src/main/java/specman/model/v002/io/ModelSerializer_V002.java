@@ -8,6 +8,7 @@ import specman.model.v002.BranchSequenceModel_V002;
 import specman.model.v002.BreakStepModel_V002;
 import specman.model.v002.CaseStepModel_V002;
 import specman.model.v002.CatchAreaModel_V002;
+import specman.model.v002.StructuredStepModel_V002;
 import specman.model.v002.CatchSequenceModel_V002;
 import specman.model.v002.ChangeInfoModel_V002;
 import specman.model.v002.CoCatchModel_V002;
@@ -349,6 +350,10 @@ public class ModelSerializer_V002 {
         return DECO + "=" + step.decorationStyle.name();
     }
 
+    private String collapsedParam(boolean collapsed) {
+        return collapsed ? COLLAPSED + "=true" : null;
+    }
+
     // ---- Step number ----
 
     private String stepNum(AbstractStepModel_V002 step) {
@@ -425,7 +430,8 @@ public class ModelSerializer_V002 {
     private void appendLoopStep(ModelKeyword_V002 keyword, StepSequenceModel_V002 loopSeq,
                                 AbstractStepModel_V002 step,
                                 Map<String, String> idToNum, boolean withCatch, String extraParam) {
-        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam, changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
+        boolean collapsed = step instanceof StructuredStepModel_V002 s ? s.collapsed : false;
+        blockOpen(keyword, stepNum(step), stepId(step), editContainerHead(step.content), extraParam, collapsedParam(collapsed), changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
         appendEditContainerTail(step.content, 1);
         appendSteps(loopSeq, idToNum);
         if (withCatch && loopSeq != null) {
@@ -440,6 +446,7 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           String.format(java.util.Locale.US, IF_RATIO + "=%.2f%%", step.ifWidthRatio * 100),
+          collapsedParam(step.collapsed),
           changeAnno(step.changeInfo, step.sourceStepId),
           decoParam(step)
         );
@@ -483,6 +490,7 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           EMPTY_WIDTH + "=" + step.emptyWidth,
+          collapsedParam(step.collapsed),
           changeAnno(step.changeInfo, step.sourceStepId),
           decoParam(step)
         );
@@ -503,7 +511,7 @@ public class ModelSerializer_V002 {
             }
             cols = c.append("]").toString();
         }
-        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols, changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
+        blockOpen(CASE, stepNum(step), stepId(step), editContainerHead(step.content), cols, collapsedParam(step.collapsed), changeAnno(step.changeInfo, step.sourceStepId), decoParam(step));
         appendEditContainerTail(step.content, 1);
         appendBranch(DEFAULT_BRANCH, step.defaultSequence, idToNum, false);
         if (step.caseSequences != null) {
@@ -520,6 +528,7 @@ public class ModelSerializer_V002 {
           stepId(step),
           editContainerHead(step.content),
           step.flatNumbering ? FLAT + "=true" : null,
+          collapsedParam(step.collapsed),
           changeAnno(step.changeInfo, step.sourceStepId),
           decoParam(step)
         );
@@ -549,9 +558,28 @@ public class ModelSerializer_V002 {
         if (catchArea == null || catchArea.catchSequences == null || catchArea.catchSequences.isEmpty()) {
             return;
         }
+        String colsStr = null;
+        if (catchArea.sequencesWidthPercent != null && !catchArea.sequencesWidthPercent.isEmpty()) {
+            StringBuilder c = new StringBuilder(COLS + "=[");
+            for (int i = 0; i < catchArea.sequencesWidthPercent.size(); i++) {
+                if (i > 0) { c.append(", "); }
+                c.append(catchArea.sequencesWidthPercent.get(i)).append("%");
+            }
+            colsStr = c.append("]").toString();
+        }
+        String catchAreaParams = Arrays.stream(new String[]{catchArea.collapsed ? COLLAPSED + "=true" : null, colsStr})
+            .filter(Objects::nonNull).collect(Collectors.joining(", "));
+        sb.append(indent()).append(CATCH_AREA);
+        if (!catchAreaParams.isEmpty()) {
+            sb.append("(").append(catchAreaParams).append(")");
+        }
+        sb.append(" {\n");
+        indentionLevel++;
         for (CatchSequenceModel_V002 catchSeq : catchArea.catchSequences) {
             String breakStepNum = idToNum.getOrDefault(catchSeq.id, "?");
-            blockOpen(CATCH, breakStepNum, editContainerHead(catchSeq.heading), changeAnno(catchSeq.changeInfo));
+            String headingWidth = (catchSeq.headingRightBarWidth != null && catchSeq.headingRightBarWidth != 18)
+                ? HEADING_WIDTH + "=" + catchSeq.headingRightBarWidth : null;
+            blockOpen(CATCH, breakStepNum, editContainerHead(catchSeq.heading), changeAnno(catchSeq.changeInfo), headingWidth);
             appendEditContainerTail(catchSeq.heading, 1);
             if (catchSeq.coCatches != null) {
                 for (CoCatchModel_V002 coCatch : catchSeq.coCatches) {
@@ -562,5 +590,7 @@ public class ModelSerializer_V002 {
             appendSteps(catchSeq, idToNum);
             blockClose();
         }
+        indentionLevel--;
+        sb.append(indent()).append("}\n");
     }
 }
