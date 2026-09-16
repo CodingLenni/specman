@@ -9,8 +9,8 @@
 settings {
     width=700
     zoom=100
-    changeModeEnabled=false
-    changeSetName=orange
+    changeModeEnabled=true
+    changeSetName=yellow
 }
 
 intro(`<h1>
@@ -77,7 +77,7 @@ mainSequence {
     ifElse(13, 1e278bd4, `<div align="center">
       If-else step with a modified width ratio of its branches. This is 
       supported for if and case steps as well.
-    </div>`, plain=`If-else step with a modified width ratio of its branches. This is supported for if and case steps as well.`, ifRatio=17.84%) {
+    </div>`, plain=`If-else step with a modified width ratio of its branches. This is supported for if and case steps as well.`, ifRatio=16.92%) {
         if_branch(`Small width branch`, plain=`Small width branch`) {
             simple(13.1, a11bbefb, ``, plain=``);
         }
@@ -277,6 +277,21 @@ This   text     is   pre  -  formatted `);
     }
     while(33, ee92204e, `Collapsed while loop. Each structured step allows to hide its sub sequences`, plain=`Collapsed while loop. Each structured step allows to hide its sub sequences`, barWidth=18, collapsed=true) {
         simple(33.1, 6320fb89, `Neuer Schritt 1`, plain=`Neuer Schritt 1`);
+    }
+    doWhile(34, dfce79d0, `Loop with shaded background`, plain=`Loop with shaded background`, barWidth=18, shade=#dcdcdc) {
+        simple(34.1, 81ed3633, `Neuer Schritt 1`, plain=`Neuer Schritt 1`);
+    }
+    ifElse(35, 717e5669, `<div align="center">
+      New if step with shading, resulting in a mixed background color
+    </div>`, plain=`New if step with shading, resulting in a mixed background color`, markups=[(0,62,Changed,yellow)], ifRatio=50.00%, change=(added, yellow), shade=#dcdcdc) {
+        if_branch(`Branch headings shaded too`, plain=`Branch headings shaded too`, markups=[(0,25,Changed,yellow)], change=(added, yellow)) {
+            simple(35.1, afbac578, `Steps within the sequences not shaded`, plain=`Steps within the sequences not shaded`, markups=[(0,36,Changed,yellow)], change=(added, yellow));
+        }
+        else_branch(`<div align="right">
+      Branch heading shaded too
+    </div>`, plain=`Branch heading shaded too`, markups=[(0,24,Changed,yellow)], change=(added, yellow)) {
+            simple(36.1, 27ce0689, ``, plain=``, change=(added, yellow));
+        }
     }
     catchArea {
         catch(10, `<b>Exception 1 - should have single line text</b>`, plain=`Exception 1 - should have single line text`) {
