@@ -2,6 +2,7 @@ package specman.ops;
 
 import specman.model.v002.AbstractStepModel_V002;
 import specman.model.v002.io.ModelSerializer_V002;
+import specman.undo.manager.UndoRecording;
 import specman.view.AbstractSchrittView;
 
 import java.awt.Toolkit;
@@ -18,8 +19,12 @@ public class CopyStepOp {
   }
 
   public void run() {
-    AbstractStepModel_V002 model = step.generiereModel(true);
-    String text = new ModelSerializer_V002().serializeStep(model, editor().instanceId());
-    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+    // generiereModel(true) cleans up text formatting before serializing, which would
+    // otherwise pollute the undo history with invisible side-effect edits from the copy action
+    try (UndoRecording ur = editor().pauseUndo()) {
+      AbstractStepModel_V002 model = step.generiereModel(true);
+      String text = new ModelSerializer_V002().serializeStep(model, editor().instanceId());
+      Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
+    }
   }
 }
