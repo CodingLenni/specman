@@ -107,7 +107,7 @@ public class IfSchrittView extends IfElseSchrittView {
 			changeInfo,
 			elseSequenz.generiereZweigSchrittSequenzModel(formatierterText),
 			ifBreite,
-			null);
+			getSourceStepId());
 	}
 	
 	public void setBackgroundUDBL(Color bg) {

@@ -111,7 +111,7 @@ public class BreakSchrittView extends AbstractSchrittView {
 			getEditorContent(formatierterText),
 			getBackground().getRGB(),
 			changeInfo,
-			null,
+			getSourceStepId(),
 			getDecorated()
 		);
 	}

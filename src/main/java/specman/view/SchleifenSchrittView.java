@@ -208,7 +208,7 @@ public void skalieren(int prozentNeu, int prozentAktuell) {
 			klappen.isSelected(),
 			wiederholSequenz.generiereSchrittSequenzModel(formatierterText),
 			0,
-			null,
+			getSourceStepId(),
 			getDecorated());
 	}
 

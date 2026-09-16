@@ -151,7 +151,7 @@ public class SubsequenzSchrittView extends AbstractSchrittView {
 			changeInfo,
 			klappen.isSelected(),
 			subsequenz.generiereSchrittSequenzModel(formatierterText),
-			null,
+			getSourceStepId(),
 			getDecorated(),
 			flatNumbering);
 	}

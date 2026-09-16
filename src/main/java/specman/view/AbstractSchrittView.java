@@ -411,8 +411,8 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 
 	public void setQuellschritt(QuellSchrittView quellschritt) { this.quellschritt = quellschritt; }
 
-	public StepNumber getQuellschrittID(){
-		return quellschritt != null ? quellschritt.getNumber() : null;
+	protected String getSourceStepId() {
+		return quellschritt != null ? quellschritt.id : null;
 	}
 
 	public void resyncStepnumberStyleUDBL() {

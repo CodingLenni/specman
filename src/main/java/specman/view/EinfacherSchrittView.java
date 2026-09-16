@@ -29,7 +29,7 @@ public class EinfacherSchrittView extends AbstractSchrittView {
 			getEditorContent(formatierterText),
 			getBackground().getRGB(),
 			changeInfo,
-			null,
+			getSourceStepId(),
 			getDecorated()
 		);
 	}

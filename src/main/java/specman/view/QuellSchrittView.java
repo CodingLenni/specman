@@ -42,7 +42,7 @@ public class QuellSchrittView extends AbstractSchrittView {
             getEditorContent(formatierterText),
             getBackground().getRGB(),
             changeInfo,
-            null,
+            getSourceStepId(),
             getDecorated()
         );
     }
@@ -52,6 +52,11 @@ public class QuellSchrittView extends AbstractSchrittView {
 
     public StepNumber getZielschrittID() {
       return zielschritt != null ? zielschritt.getNumber() : null;
+    }
+
+    @Override
+    protected String getSourceStepId() {
+      return zielschritt != null ? zielschritt.id : null;
     }
 
     public void setQuellStil() {

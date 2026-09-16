@@ -43,7 +43,7 @@ public class WhileWhileSchrittView extends SchleifenSchrittView {
 			klappen.isSelected(),
 			wiederholSequenz.generiereSchrittSequenzModel(formatierterText),
 			linkerBalken.getWidth(),
-			null,
+			getSourceStepId(),
 			getDecorated());
 	}
 
