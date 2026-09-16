@@ -37,6 +37,8 @@ import java.util.Map;
 import specman.editarea.StepnumberLink;
 import specman.editarea.TextEditArea;
 import specman.editarea.document.WrappedElement;
+import specman.Aenderungsart;
+import specman.model.v002.AbstractStepModel_V002;
 
 public class LoadDiagrammSpecmanOp extends AbstractInitSpecmanOp {
 
@@ -143,7 +145,7 @@ public class LoadDiagrammSpecmanOp extends AbstractInitSpecmanOp {
     hauptSequenzInitialisieren();
     getHauptSequenz().renummerieren();
     rewriteStaleStepNumberLinks(model);
-    // quellZielZuweisung: step references handled via UUID in a future step
+    quellZielZuweisungV002(model);
     getHauptSequenz().viewsNachinitialisieren();
     getIntro().viewsNachinitialisieren();
     getIntro().registerAllExistingStepnumbers();
@@ -311,6 +313,24 @@ public class LoadDiagrammSpecmanOp extends AbstractInitSpecmanOp {
     // Apply back-to-front so earlier offsets are not shifted by later replacements
     for (int i = elementsToUpdate.size() - 1; i >= 0; i--) {
       area.replaceStepnumberLinkElement(elementsToUpdate.get(i), newIDs.get(i));
+    }
+  }
+
+  private void quellZielZuweisungV002(DiagramModel_V002 model) {
+    for (AbstractStepModel_V002 step : model.queryAllSteps()) {
+      if (step.changeInfo == null || step.changeInfo.changetype != Aenderungsart.Zielschritt) {
+        continue;
+      }
+      if (step.sourceStepId == null) {
+        continue;
+      }
+      AbstractSchrittView zielView = getHauptSequenz().findViewByStepId(step.id);
+      AbstractSchrittView quellView = getHauptSequenz().findViewByStepId(
+          AbstractStepModel_V002.normalizeId(step.sourceStepId));
+      if (zielView != null && quellView instanceof QuellSchrittView) {
+        zielView.setQuellschrittUDBL((QuellSchrittView) quellView);
+        ((QuellSchrittView) quellView).setZielschritt(zielView);
+      }
     }
   }
 

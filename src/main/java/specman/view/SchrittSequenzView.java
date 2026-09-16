@@ -523,6 +523,21 @@ public class SchrittSequenzView {
 		return null;
 	}
 
+	public AbstractSchrittView findViewByStepId(String stepId) {
+		for (AbstractSchrittView schritt : schritte) {
+			if (stepId.equals(schritt.id)) {
+				return schritt;
+			}
+			for (SchrittSequenzView seq : schritt.unterSequenzen()) {
+				AbstractSchrittView result = seq.findViewByStepId(stepId);
+				if (result != null) {
+					return result;
+				}
+			}
+		}
+		return null;
+	}
+
 	public void mergeChangeSetUDBL(@NotNull ChangeSet target, @NotNull ChangeSet source) {
 		if (changeInfo.changedBy(source)) {
 			UDBL.setChangeInfo(this, changeInfo.reassign(target));

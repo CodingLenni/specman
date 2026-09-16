@@ -210,16 +210,18 @@ public class ModelConverterV001V002 {
                 null, s.decorationStyle, s.flatNumbering);
         }
         if (v1 instanceof QuellSchrittModel_V001) {
+            String targetId = v1.quellschrittID != null ? map.get(v1.quellschrittID.toString()) : null;
             return new SourceStepModel_V002(id, null, convertContent(v1.inhalt), v1.farbe,
-                changeInfo(v1), null, v1.decorationStyle);
+                changeInfo(v1), targetId, v1.decorationStyle);
         }
         if (v1 instanceof BreakSchrittModel_V001) {
             return new BreakStepModel_V002(id, null, convertContent(v1.inhalt), v1.farbe,
                 changeInfo(v1), null, v1.decorationStyle);
         }
         // EinfacherSchrittModel_V001 and StrukturierterSchrittModel_V001 fallback
+        String sourceId = v1.quellschrittID != null ? map.get(v1.quellschrittID.toString()) : null;
         return new SimpleStepModel_V002(id, null, convertContent(v1.inhalt), v1.farbe,
-            changeInfo(v1), null, v1.decorationStyle);
+            changeInfo(v1), sourceId, v1.decorationStyle);
     }
 
     private static specman.ChangeInfo changeInfo(AbstractSchrittModel_V001 step) {
