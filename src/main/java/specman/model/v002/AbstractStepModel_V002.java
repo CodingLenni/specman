@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import specman.Aenderungsart;
 import specman.ChangeInfo;
 import specman.StepNumber;
 import specman.model.v002.io.NumberedSubSequence_V002;
@@ -95,4 +96,8 @@ public abstract class AbstractStepModel_V002 {
     public StepNumber nextSlotInOuterSequence(StepNumber myNumber, Map<String, StepNumber> stepNumbers) {
         return myNumber;
     }
+
+  public boolean isTargetStep() {
+    return changeInfo != null && changeInfo.changetype == Aenderungsart.Zielschritt;
+  }
 }
