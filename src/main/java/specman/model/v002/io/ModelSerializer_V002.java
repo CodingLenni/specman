@@ -58,10 +58,9 @@ public class ModelSerializer_V002 {
     }
 
     /** Serializes one or more steps to the SpecmanModel_V002 fragment format for clipboard use. */
-    public String serializeSteps(List<AbstractStepModel_V002> steps, String specmanInstanceId) {
+    public String serializeSteps(List<AbstractStepModel_V002> steps) {
         sb.setLength(0);
         indentionLevel = 0;
-        sb.append(COMMENT_INTRO).append(" specman-fragment instance=").append(specmanInstanceId).append("\n");
         List<AbstractStepModel_V002> allSteps = new ArrayList<>();
         for (AbstractStepModel_V002 step : steps) {
             step.addStepRecursively(allSteps);
@@ -79,8 +78,8 @@ public class ModelSerializer_V002 {
     }
 
     /** Serializes a single step to the SpecmanModel_V002 fragment format for clipboard use. */
-    public String serializeStep(AbstractStepModel_V002 step, String specmanInstanceId) {
-        return serializeSteps(List.of(step), specmanInstanceId);
+    public String serializeStep(AbstractStepModel_V002 step) {
+        return serializeSteps(List.of(step));
     }
 
 

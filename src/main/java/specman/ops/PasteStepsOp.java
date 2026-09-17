@@ -1,6 +1,8 @@
 package specman.ops;
 
 import specman.EditException;
+import specman.clipboard.SpecmanClipboardContent;
+import specman.clipboard.SpecmanTransferable;
 import specman.model.v002.AbstractStepModel_V002;
 import specman.model.v002.io.ModelParser_V002;
 import specman.model.v002.io.ModelParseException;
@@ -9,6 +11,7 @@ import specman.view.AbstractSchrittView;
 import specman.view.SchrittSequenzView;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.util.List;
 import java.util.Set;
@@ -29,10 +32,10 @@ public class PasteStepsOp extends AbstractADBLSpecmanOp {
   @Override
   void execute() throws EditException {
     try {
-      String text = readClipboard();
-      if (text == null) return;
+      SpecmanClipboardContent content = readClipboard();
+      if (content == null) return;
 
-      List<AbstractStepModel_V002> models = new ModelParser_V002().parseSteps(text);
+      List<AbstractStepModel_V002> models = new ModelParser_V002().parseSteps(content.serializedSteps);
 
       Set<String> existingIds = editor().listAllSteps().stream()
           .map(AbstractSchrittView::getId)
@@ -55,13 +58,18 @@ public class PasteStepsOp extends AbstractADBLSpecmanOp {
     }
   }
 
-  private String readClipboard() {
+  private SpecmanClipboardContent readClipboard() {
     try {
-      String text = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-      return (text != null && !text.isBlank()) ? text : null;
+      Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+      if (clipboard.isDataFlavorAvailable(SpecmanTransferable.SPECMAN_STEPS_FLAVOR)) {
+        return (SpecmanClipboardContent) clipboard.getData(SpecmanTransferable.SPECMAN_STEPS_FLAVOR);
+      }
+      String text = (String) clipboard.getData(DataFlavor.stringFlavor);
+      return (text != null && !text.isBlank()) ? new SpecmanClipboardContent(null, text) : null;
     }
     catch (Exception ex) {
       return null;
     }
   }
 }
+
