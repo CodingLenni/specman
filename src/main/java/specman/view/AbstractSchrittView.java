@@ -692,5 +692,9 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
     return getParent().allowsStepDeletion() && !changeInfo.isDeleted();
   }
 
-  public boolean allowsClipboardOperations() { return true; }
+  public boolean allowsClipboardOperations() { return !changeInfo.isDeleted(); }
+
+  public void markAsAddedInCurrentChangeset() {
+    changeInfo = ChangeInfo.added();
+  }
 }
