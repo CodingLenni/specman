@@ -324,7 +324,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
      * this situation by this text area being no longer attached to its parent. */
     private boolean areaDetachedByMerge() { return getParent() == null; }
 
-    // TODO JL: Muss mit aenderungsmarkierungenVerwerfen zusammengelegt werden
+    /** TODO JL: Muss mit {@link ChangemarkDecolorer#decolor(List, ChangeSet)} zusammengelegt werden */
     private int aenderungsmarkierungenVerwerfen(WrappedElement e, List<DeletionRange> loeschungen, ChangeSet triggerSet) {
         int changesRejected = 0;
 
