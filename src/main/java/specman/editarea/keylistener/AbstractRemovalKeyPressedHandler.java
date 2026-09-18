@@ -1,10 +1,11 @@
 package specman.editarea.keylistener;
 
 import specman.EditorI;
-import specman.Specman;
+
 import static specman.ChangeSet.changeset;
 import specman.editarea.StepnumberLink;
 import specman.editarea.TextEditArea;
+import static specman.editarea.document.WrappedDocumentUtil.*;
 import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
@@ -14,8 +15,6 @@ import specman.view.AbstractSchrittView;
 
 import java.awt.event.KeyEvent;
 
-import specman.Specman;
-import static specman.ChangeSet.changeset;
 import static specman.Specman.editor;
 
 abstract class AbstractRemovalKeyPressedHandler extends AbstractKeyEventHandler {
@@ -67,14 +66,14 @@ abstract class AbstractRemovalKeyPressedHandler extends AbstractKeyEventHandler 
         }
         else {
           if (elementHatDurchgestrichenenText(element)) { // No need to reapply deletedStyle if it's already set
-            if (stepnumberLinkChangedStyleSet(currentStartPosition)) {
+            if (stepnumberLinkChangedStyleSetAt(currentStartPosition)) {
               setCaretPosition(linkStilStart.unwrap());
             }
             else {
               setCaretPosition(currentStartPosition.unwrap());
             }
           }
-          else if (stepnumberLinkNormalStyleSet(currentStartPosition)) {
+          else if (stepnumberLinkNormalStyleSetAt(currentStartPosition)) {
             markRangeAsDeleted(linkStilStart, linkStilEnd.distance(linkStilStart), changeset().getDeletedStepnumberLinkStyle());
             maxDeletionMarked = maxDeletionMarked.max(linkStilEnd);
             setCaretPosition(linkStilStart.unwrap());
@@ -119,7 +118,7 @@ abstract class AbstractRemovalKeyPressedHandler extends AbstractKeyEventHandler 
     doc.remove(startOffset, endOffset.distance(startOffset));
   }
 
-  private boolean stepnumberLinkChangedStyleSet(WrappedPosition position) {
+  private boolean stepnumberLinkChangedStyleSetAt(WrappedPosition position) {
     WrappedDocument doc = getWrappedDocument();
     return stepnumberLinkChangedStyleSet(doc.getCharacterElement(position));
   }

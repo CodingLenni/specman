@@ -1,6 +1,7 @@
 package specman.model.v002.io;
 
 import specman.StepNumber;
+import specman.editarea.document.WrappedBadLocationException;
 import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedPosition;
 import specman.model.v002.AbstractEditAreaModel_V002;
@@ -17,7 +18,9 @@ import specman.model.v002.TableEditAreaModel_V002;
 import specman.model.v002.TextEditAreaModel_V002;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,7 +41,7 @@ public class ModelStepnumberRewriter_V002 {
    * @param numberMapping maps each step's saved number to its newly computed number
    *                      (built by ModelRenumberer_V002.buildNumberMapping)
    * @return SanitizeResult containing broken refs and steplink updates with locations */
-  public static SanitizeResult rewrite(DiagramModel_V002 model, Map<String, String> numberMapping) throws Exception {
+  public static SanitizeResult rewrite(DiagramModel_V002 model, Map<String, String> numberMapping) {
     List<String> brokenRefs = new ArrayList<>();
     // location → (oldNum → newNum)
     Map<String, Map<String, String>> locationUpdates = new LinkedHashMap<>();
@@ -68,7 +71,7 @@ public class ModelStepnumberRewriter_V002 {
       StepSequenceModel_V002 seq,
       Map<String, String> numberMapping,
       List<String> brokenRefs,
-      Map<String, Map<String, String>> locationUpdates) throws Exception {
+      Map<String, Map<String, String>> locationUpdates) {
 
     for (AbstractStepModel_V002 step : seq.steps) {
       String location = "Step " + step.stepNumber + " (" + ModelRenumberer_V002.stepType(step) + ")";
@@ -99,7 +102,7 @@ public class ModelStepnumberRewriter_V002 {
       String location,
       Map<String, String> numberMapping,
       List<String> brokenRefs,
-      Map<String, Map<String, String>> locationUpdates) throws Exception {
+      Map<String, Map<String, String>> locationUpdates) {
 
     if (content == null) {
       return;
@@ -130,34 +133,39 @@ public class ModelStepnumberRewriter_V002 {
       String location,
       Map<String, String> numberMapping,
       List<String> brokenRefs,
-      Map<String, Map<String, String>> locationUpdates) throws Exception {
+      Map<String, Map<String, String>> locationUpdates) {
 
-    if (model.markups == null || model.markups.isEmpty()) {
-      return model;
+    try {
+      if (model.markups == null || model.markups.isEmpty()) {
+        return model;
+      }
+      boolean hasSteplink = model.markups.stream().anyMatch(m -> m.type.isSteplink());
+      if (!hasSteplink) {
+        return model;
+      }
+
+      JEditorPane ed = HtmlToPlainText.fromHtml(model.text);
+
+      WrappedDocument doc = new WrappedDocument((StyledDocument) ed.getDocument());
+      List<Markup_V002> markups = new ArrayList<>(model.markups);
+
+      if (!rewriteSteplinksInDocument(doc, markups, location, numberMapping, brokenRefs, locationUpdates)) {
+        return model;
+      }
+
+      StringWriter sw = new StringWriter();
+      HtmlToPlainText.HTML_EDITOR_KIT.write(sw, ed.getDocument(), 0, ed.getDocument().getLength());
+      String newText = sw.toString();
+      String newPlainText = ed.getDocument().getText(0, ed.getDocument().getLength());
+
+      return new TextEditAreaModel_V002(newText, newPlainText, markups, model.changeInfo);
     }
-    boolean hasSteplink = model.markups.stream().anyMatch(m -> m.type.isSteplink());
-    if (!hasSteplink) {
-      return model;
+    catch(BadLocationException blx) {
+      throw new WrappedBadLocationException(blx);
     }
-
-    JEditorPane ed = new JEditorPane();
-    ed.setEditorKit(HtmlToPlainText.HTML_EDITOR_KIT);
-    ed.setText(model.text);
-    SwingUtilities.invokeAndWait(() -> {});
-
-    WrappedDocument doc = new WrappedDocument((StyledDocument) ed.getDocument());
-    List<Markup_V002> markups = new ArrayList<>(model.markups);
-
-    if (!rewriteSteplinksInDocument(doc, markups, location, numberMapping, brokenRefs, locationUpdates)) {
-      return model;
+    catch(IOException iox) {
+      throw new RuntimeException("Unexpected IOException while writing HTML from document", iox);
     }
-
-    StringWriter sw = new StringWriter();
-    HtmlToPlainText.HTML_EDITOR_KIT.write(sw, ed.getDocument(), 0, ed.getDocument().getLength());
-    String newText = sw.toString();
-    String newPlainText = ed.getDocument().getText(0, ed.getDocument().getLength());
-
-    return new TextEditAreaModel_V002(newText, newPlainText, markups, model.changeInfo);
   }
 
   private static boolean rewriteSteplinksInDocument(

@@ -5,7 +5,7 @@ import specman.ChangeInfo;
 public class CoCatchModel_V002 {
     public String breakStepId;
     public final EditorContentModel_V002 heading;
-    public final ChangeInfoModel_V002 changeInfo;
+    public ChangeInfoModel_V002 changeInfo;
 
     @Deprecated public CoCatchModel_V002() { // For Jackson only
         breakStepId = null;

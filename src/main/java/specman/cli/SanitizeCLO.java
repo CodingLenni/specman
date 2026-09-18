@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import specman.model.ModelEnvelope;
 import specman.model.v002.AbstractStepModel_V002;
 import specman.model.v002.DiagramModel_V002;
+import specman.model.v002.io.ModelParseException;
 import specman.model.v002.io.ModelParser_V002;
 import specman.model.v002.io.ModelRenumberer_V002;
 import specman.model.v002.io.ModelSerializer_V002;
@@ -15,6 +16,7 @@ import specman.model.v002.io.StepNumberChange;
 import specman.model.v002.io.SteplinkUpdate;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -99,7 +101,7 @@ public class SanitizeCLO extends AbstractCLO {
     }
   }
 
-  private static SanitizeResult sanitize(File file) throws Exception {
+  private static SanitizeResult sanitize(File file) throws IOException, ModelParseException {
     byte[] data = Files.readAllBytes(file.toPath());
 
     DiagramModel_V002 model;
@@ -110,14 +112,14 @@ public class SanitizeCLO extends AbstractCLO {
       ObjectMapper mapper = buildMapper();
       ModelEnvelope envelope = mapper.readValue(data, ModelEnvelope.class);
       if (!(envelope.model instanceof DiagramModel_V002)) {
-        throw new Exception("Unsupported model type — headless sanitize requires V2 format");
+        throw new RuntimeException("Unsupported model type — headless sanitize requires V2 format");
       }
       model = (DiagramModel_V002) envelope.model;
     }
 
     List<String> idErrors = checkDuplicateIds(model);
     if (!idErrors.isEmpty()) {
-      throw new Exception("Duplicate step IDs:\n  " + String.join("\n  ", idErrors));
+      throw new RuntimeException("Duplicate step IDs:\n  " + String.join("\n  ", idErrors));
     }
 
     Map<String, String> savedNumbers = ModelRenumberer_V002.collectNumbers(model.mainSequence);
@@ -127,7 +129,13 @@ public class SanitizeCLO extends AbstractCLO {
       savedNumbers.isEmpty() ? computedNumbers : savedNumbers,
       computedNumbers);
 
-    SanitizeResult result = ModelStepnumberRewriter_V002.rewrite(model, numberMapping);
+    SanitizeResult result;
+    try {
+      result = ModelStepnumberRewriter_V002.rewrite(model, numberMapping);
+    }
+    catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
     if (!result.brokenRefs.isEmpty()) {
       return result;
     }

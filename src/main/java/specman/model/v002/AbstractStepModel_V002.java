@@ -34,7 +34,7 @@ public abstract class AbstractStepModel_V002 {
     public String id;
     public final EditorContentModel_V002 content;
     public final Integer shade;
-    public final ChangeInfoModel_V002 changeInfo;
+    public ChangeInfoModel_V002 changeInfo;
     public String sourceStepId;
     public final RoundedBorderDecorationStyle decorationStyle;
     /** Computed by ModelRenumberer_V002; not part of step identity. */

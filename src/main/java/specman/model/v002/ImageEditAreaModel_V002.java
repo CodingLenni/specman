@@ -6,7 +6,6 @@ public class ImageEditAreaModel_V002 extends AbstractEditAreaModel_V002 {
     public final byte[] imageData;
     public final String imageType;
     public final float individualScalePercent;
-    public final ChangeInfoModel_V002 changeInfo;
 
     @Deprecated public ImageEditAreaModel_V002() { // For Jackson only
         imageData = null;

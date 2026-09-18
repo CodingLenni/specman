@@ -14,4 +14,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
     @Type(value = TableEditAreaModel_V002.class,    name = "table"),
 })
 public abstract class AbstractEditAreaModel_V002 {
+    public ChangeInfoModel_V002 changeInfo;
 }

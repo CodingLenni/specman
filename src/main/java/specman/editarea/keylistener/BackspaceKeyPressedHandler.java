@@ -37,7 +37,7 @@ class BackspaceKeyPressedHandler extends AbstractRemovalKeyPressedHandler {
       handleTextDeletion();
       event.consume();
     }
-    else if (stepnumberLinkStyleSet(getWrappedSelectionEnd().dec())) {
+    else if (stepnumberLinkStyleSetAt(getWrappedSelectionEnd().dec())) {
       removeStepnumberLinkBefore();
       event.consume();
     }

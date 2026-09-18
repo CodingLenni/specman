@@ -8,7 +8,6 @@ public class TableEditAreaModel_V002 extends AbstractEditAreaModel_V002 {
     public final List<List<EditorContentModel_V002>> cells;
     public final int tableWidthPercent;
     public final List<Integer> columnsWidthPercent;
-    public final ChangeInfoModel_V002 changeInfo;
 
     @Deprecated public TableEditAreaModel_V002() { // For Jackson only
         cells = null;

@@ -117,7 +117,7 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
       WrappedPosition selectionEnd = getWrappedSelectionEnd();
 
       if (!selectionStart.equals(selectionEnd)) {
-        if (stepnumberLinkNormalStyleSet(selectionStart)) {
+        if (stepnumberLinkNormalStyleSetAt(selectionStart)) {
           markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStepnumberLinkStyle());
         } else {
           markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStyle());
@@ -151,7 +151,7 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
     // markierten Buchstaben alle einzelne Elements werden.
     // Wenn an der aktuellen Position schon gelbe Hintegrundfarbe
     // eingestellt ist, dann Ändern wir den aktuellen Style gar nicht mehr.
-    if (!aenderungsStilGesetzt() && !stepnumberLinkNormalStyleSet(getWrappedCaretPosition())) {
+    if (!aenderungsStilGesetzt() && !stepnumberLinkNormalStyleSetAt(getWrappedCaretPosition())) {
       StyledEditorKit k = getEditorKit();
       MutableAttributeSet inputAttributes = k.getInputAttributes();
       StyleConstants.setStrikeThrough(inputAttributes, false); // Falls noch Gelöscht-Stil herrschte

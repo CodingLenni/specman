@@ -21,7 +21,7 @@ public class PlainTextSynchronizer_V002 {
   /** Re-renders plain text for every TextEditArea where the stored plain text
    * differs from a fresh rendering of its HTML content.
    * @return number of text areas updated */
-  public static int updateAllPlainTexts(DiagramModel_V002 model) throws Exception {
+  public static int updateAllPlainTexts(DiagramModel_V002 model) {
     int[] count = {0};
     updatePlainTextsInContent(model.intro, count);
     updatePlainTextsInContent(model.outro, count);
@@ -31,7 +31,7 @@ public class PlainTextSynchronizer_V002 {
     return count[0];
   }
 
-  private static void updatePlainTextsInSequence(StepSequenceModel_V002 seq, int[] count) throws Exception {
+  private static void updatePlainTextsInSequence(StepSequenceModel_V002 seq, int[] count) {
     if (seq == null || seq.steps == null) {
       return;
     }
@@ -57,7 +57,7 @@ public class PlainTextSynchronizer_V002 {
     }
   }
 
-  private static void updatePlainTextsInContent(EditorContentModel_V002 content, int[] count) throws Exception {
+  private static void updatePlainTextsInContent(EditorContentModel_V002 content, int[] count) {
     if (content == null || content.areas == null) {
       return;
     }
@@ -81,7 +81,7 @@ public class PlainTextSynchronizer_V002 {
     }
   }
 
-  private static TextEditAreaModel_V002 refreshPlainText(TextEditAreaModel_V002 model) throws Exception {
+  private static TextEditAreaModel_V002 refreshPlainText(TextEditAreaModel_V002 model) {
     if (model.text == null) {
       return model;
     }

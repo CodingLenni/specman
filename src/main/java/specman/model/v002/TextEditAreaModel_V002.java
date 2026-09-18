@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TextEditAreaModel_V002 extends AbstractEditAreaModel_V002 {
-    public final String text;
-    public final String plainText;
-    public final List<Markup_V002> markups;
-    public final ChangeInfoModel_V002 changeInfo;
+    public String text;
+    public String plainText;
+    public List<Markup_V002> markups;
 
     @Deprecated public TextEditAreaModel_V002() { // For Jackson only
         text = null;

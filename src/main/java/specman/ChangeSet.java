@@ -100,6 +100,10 @@ public class ChangeSet {
     return ALL.values().stream().anyMatch(cs -> cs.isAnyBackground(cssColor));
   }
 
+  public static boolean isAnyStepnumberLinkChangedBackground(String cssColor) {
+    return ALL.values().stream().anyMatch(cs -> cssColor.equalsIgnoreCase(cs.stepnumberLinkHtmlColor()));
+  }
+
   public static TextMarkup textMarkupFromBackground(String cssColor) {
     for (ChangeSet cs : ALL.values()) {
       MarkupType type = cs.colors.toMarkupType(cssColor);

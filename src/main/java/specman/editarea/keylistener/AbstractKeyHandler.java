@@ -17,13 +17,13 @@ public class AbstractKeyHandler implements TextEditAreaAccessMixin {
   public TextEditArea textArea() { return textArea; }
 
   protected boolean shouldPreventActionInsideStepnumberLink() {
-    if (stepnumberLinkStyleSet(getWrappedSelectionStart()) || stepnumberLinkStyleSet(getWrappedSelectionEnd())) {
+    if (stepnumberLinkStyleSetAt(getWrappedSelectionStart()) || stepnumberLinkStyleSetAt(getWrappedSelectionEnd())) {
       if (isCaretInsideSelection()) {
         return true;
       }
 
       for (WrappedPosition i = getWrappedSelectionStart(); i.less(getWrappedSelectionEnd()); i = i.inc()) {
-        if (stepnumberLinkStyleSet(i)) {
+        if (stepnumberLinkStyleSetAt(i)) {
           if (getStartOffsetFromPosition(i).less(getWrappedSelectionStart()) ||
             getEndOffsetFromPosition(i).greater(getWrappedSelectionEnd())) {
             return true;
@@ -44,7 +44,7 @@ public class AbstractKeyHandler implements TextEditAreaAccessMixin {
 
   protected boolean skipToStepnumberLinkEnd() {
     WrappedPosition selectionEnd = getWrappedSelectionEnd();
-    if (stepnumberLinkStyleSet(selectionEnd)) {
+    if (stepnumberLinkStyleSetAt(selectionEnd)) {
       setCaretPosition(getEndOffsetFromPosition(selectionEnd).unwrap());
       return true;
     }
@@ -53,7 +53,7 @@ public class AbstractKeyHandler implements TextEditAreaAccessMixin {
 
   protected boolean skipToStepnumberLinkStart() {
     WrappedPosition selectionStart = getWrappedSelectionStart();
-    if (!selectionStart.isZero() && stepnumberLinkStyleSet(selectionStart.dec())) {
+    if (!selectionStart.isZero() && stepnumberLinkStyleSetAt(selectionStart.dec())) {
       setCaretPosition(getStartOffsetFromPosition(selectionStart.dec()).unwrap());
       return true;
     }

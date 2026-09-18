@@ -8,6 +8,8 @@ import specman.ChangeInfo;
 import specman.EditorI;
 import specman.Specman;
 import static specman.ChangeSet.changeset;
+
+import specman.editarea.document.WrappedDocumentUtil;
 import specman.editarea.keylistener.TextEditAreaKeyListener;
 import specman.editarea.markups.*;
 import specman.editarea.document.WrappedDocument;
@@ -39,6 +41,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static specman.editarea.document.WrappedDocumentUtil.*;
+import specman.editarea.document.ChangemarkDecolorer;
+import specman.editarea.document.WrappedDocumentUtil.DeletionRange;
 import static specman.editarea.HTMLTags.BODY_INTRO;
 import static specman.editarea.HTMLTags.BODY_OUTRO;
 import static specman.editarea.HTMLTags.HEAD_INTRO;
@@ -63,8 +68,6 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
     private WrappedElement hoveredElement;
     private ChangeInfo changeInfo;
     private TextEditAreaModel_V002 deletionBackup;
-
-    private record DeletionRange(int von, int bis) {}
 
     public TextEditArea(TextEditAreaModel_V002 model, Font font) {
         this.changeInfo = model.changeInfo != null ? model.changeInfo.toChangeInfo() : specman.ChangeInfo.UNTRACKED;
@@ -111,7 +114,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
             @Override
             public void mousePressed(MouseEvent e) {
             if (e.isControlDown()) {
-                if (stepnumberLinkStyleSet(getWrappedCaretPosition())) {
+                if (stepnumberLinkStyleSetAt(getWrappedCaretPosition())) {
                     scrollToStepnumber();
                 }
             }
@@ -264,33 +267,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
     }
 
     public java.util.List<Markup_V002> findMarkups(MarkupSearchPurpose searchPurpose) {
-        java.util.List<Markup_V002> ergebnis = new ArrayList<>();
-        WrappedDocument doc = getWrappedDocument();
-        for (WrappedElement e : doc.getRootElements()) {
-            findMarkups(e, ergebnis, searchPurpose);
-            if (!ergebnis.isEmpty() && searchPurpose.stopAfterFirstMatch()) {
-                break;
-            }
-        }
-        return ergebnis;
-    }
-
-    private void findMarkups(WrappedElement e, java.util.List<Markup_V002> ergebnis, MarkupSearchPurpose searchPurpose) {
-        TextMarkup markup = TextMarkup.fromBackground(e);
-        if (markup != null && markup.matches(searchPurpose)) {
-            ergebnis.add(new Markup_V002(e.getStartOffset().toModel(), e.getEndOffset().toModel()-1, markup));
-            if (searchPurpose == FirstChangeOnly) {
-                return;
-            }
-        }
-        if (ergebnis.isEmpty() || searchPurpose == All) {
-            for (int i = 0; i < e.getElementCount(); i++) {
-                findMarkups(e.getElement(i), ergebnis, searchPurpose);
-                if (!ergebnis.isEmpty() && searchPurpose.stopAfterFirstMatch()) {
-                    break;
-                }
-            }
-        }
+        return new ChangemarkDecolorer(getWrappedDocument()).findMarkups(searchPurpose);
     }
 
     public int aenderungenUebernehmen() {
@@ -298,9 +275,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
         int changesMade = changeInfo.numChangesBy(changeset());
 
         List<DeletionRange> loeschungen = new ArrayList<>();
-        for (WrappedElement e : doc.getRootElements()) {
-            changesMade += aenderungsmarkierungenUebernehmen(e, loeschungen);
-        }
+        changesMade += new ChangemarkDecolorer(doc).decolor(loeschungen, changeset());
         changesMade += removeTextAndUnregisterStepnumberLinks(loeschungen, doc);
 
         changeInfo = changeInfo.untrack(changeset());
@@ -350,31 +325,6 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
     private boolean areaDetachedByMerge() { return getParent() == null; }
 
     // TODO JL: Muss mit aenderungsmarkierungenVerwerfen zusammengelegt werden
-    private int aenderungsmarkierungenUebernehmen(WrappedElement e, List<DeletionRange> loeschungen) {
-        int changesMade = 0;
-
-        WrappedDocument doc = e.getDocument();
-        if (elementHatAenderungshintergrund(e, changeset())) {
-            if (elementHatDurchgestrichenenText(e)) {
-                loeschungen.add(new DeletionRange(e.getStartOffset().toModel(), e.getEndOffset().toModel()));
-            } else {
-                AttributeSet attribute = e.getAttributes();
-                MutableAttributeSet entfaerbt = new SimpleAttributeSet();
-                entfaerbt.addAttributes(attribute);
-                StyleConstants.setBackground(entfaerbt, stepnumberLinkChangedStyleSet(e, changeset()) ? STEPNUMBER_LINK_COLOR.color : TEXT_BACKGROUND_COLOR_STANDARD);
-                doc.setCharacterAttributes(e.getStartOffset(), e.getEndOffset().distance(e.getStartOffset()), entfaerbt, true);
-                changesMade++;
-            }
-        }
-
-        for (int i = 0; i < e.getElementCount(); i++) {
-            changesMade += aenderungsmarkierungenUebernehmen(e.getElement(i), loeschungen);
-        }
-
-        return changesMade;
-    }
-
-    // TODO JL: Muss mit aenderungsmarkierungenUebernehmen zusammengelegt werden
     private int aenderungsmarkierungenVerwerfen(WrappedElement e, List<DeletionRange> loeschungen, ChangeSet triggerSet) {
         int changesRejected = 0;
 
@@ -397,23 +347,6 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
         }
 
         return changesRejected;
-    }
-
-    public boolean elementHatDurchgestrichenenText(WrappedElement e) {
-        AttributeSet attr = e.getAttributes();
-        return StyleConstants.isStrikeThrough(attr);
-    }
-
-    public boolean elementHatAenderungshintergrund(WrappedElement e) {
-        return elementHatAenderungshintergrund(e, null);
-    }
-
-    public boolean elementHatAenderungshintergrund(WrappedElement e, ChangeSet cs) {
-        String cssColor = getBackgroundColorFromElement(e);
-        if (cs != null) {
-            return cs.isAnyBackground(cssColor);
-        }
-        return ChangeSet.isAnyChangeSetBackground(cssColor);
     }
 
     public boolean aenderungsStilGesetzt() {
@@ -462,8 +395,8 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
         for (int i = 0; i < loeschungen.size(); i++) {
             DeletionRange loeschung = loeschungen.get((loeschungen.size()) - 1 - i);
             try {
-                WrappedPosition loeschungVon = doc.fromModel(loeschung.von());
-                WrappedPosition loeschungBis = doc.fromModel(loeschung.bis());
+                WrappedPosition loeschungVon = doc.fromModel(loeschung.start());
+                WrappedPosition loeschungBis = doc.fromModel(loeschung.end());
                 removeTextAndUnregisterStepnumberLinks(loeschungVon, loeschungBis);
                 numRemovals++;
             } catch (Exception e) {
@@ -502,7 +435,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
 
     public boolean skipToStepnumberLinkStart() {
         WrappedPosition selectionEnd = getWrappedSelectionEnd();
-        if (stepnumberLinkStyleSet(selectionEnd.dec())) {
+        if (stepnumberLinkStyleSetAt(selectionEnd.dec())) {
             setCaretPosition(getStartOffsetFromPosition(selectionEnd.dec()).unwrap());
             return true;
         }
@@ -656,7 +589,7 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
             WrappedPosition caretPos = getWrappedCaretPosition();
 
             // Add space between two stepnumberlinks to prevent merging them
-            if (stepnumberLinkStyleSet(caretPos.dec())) {
+            if (stepnumberLinkStyleSetAt(caretPos.dec())) {
                 doc.insertString(caretPos, " ", null);
                 caretPos = caretPos.inc();
             }
@@ -674,40 +607,15 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
         }
     }
 
-    private boolean stepnumberLinkNormalStyleSet(WrappedPosition position) {
+    private boolean stepnumberLinkNormalStyleSetAt(WrappedPosition position) {
         return stepnumberLinkNormalStyleSet(getWrappedDocument().getCharacterElement(position));
     }
 
-    private boolean stepnumberLinkNormalStyleSet(WrappedElement element) {
-        String color = getBackgroundColorFromElement(element);
-        return ChangeSet.STEPNUMBER_LINK_COLOR.isBackground(color);
-    }
 
-
-    public boolean stepnumberLinkChangedStyleSet(WrappedElement element) {
-        return stepnumberLinkChangedStyleSet(element, changeset());
-    }
-
-    public boolean stepnumberLinkChangedStyleSet(WrappedElement element, ChangeSet cs) {
-        String color = getBackgroundColorFromElement(element);
-        return color != null && color.equalsIgnoreCase(cs.stepnumberLinkHtmlColor());
-    }
-
-
-    public boolean stepnumberLinkStyleSet(WrappedPosition position) {
+    public boolean stepnumberLinkStyleSetAt(WrappedPosition position) {
         return stepnumberLinkStyleSet(getWrappedDocument().getCharacterElement(position));
     }
 
-    public boolean stepnumberLinkStyleSet(WrappedElement element) {
-        return element != null &&
-          (stepnumberLinkNormalStyleSet(element) || stepnumberLinkChangedStyleSet(element));
-    }
-
-
-    private String getBackgroundColorFromElement(WrappedElement element) {
-        Object backgroundColorValue = element.getAttributes().getAttribute(CSS.Attribute.BACKGROUND_COLOR);
-        return backgroundColorValue != null ? backgroundColorValue.toString() : null;
-    }
 
     public WrappedPosition getStartOffsetFromPosition(WrappedPosition position) {
         return getWrappedDocument().getCharacterElement(position).getStartOffset();
