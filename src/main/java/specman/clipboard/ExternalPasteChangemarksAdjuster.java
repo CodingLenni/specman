@@ -7,6 +7,7 @@ import specman.StepNumber;
 import specman.editarea.document.ChangemarkDecolorer;
 import specman.editarea.document.WrappedDocumentUtil.DeletionRange;
 import specman.editarea.document.WrappedDocument;
+import specman.editarea.markups.MarkupBackgroundStyleInitializer;
 import specman.editarea.markups.MarkupSearchPurpose;
 import specman.model.v002.*;
 import specman.model.v002.io.HtmlToPlainText;
@@ -139,8 +140,9 @@ public class ExternalPasteChangemarksAdjuster implements PasteChangemarksAdjuste
     }
     JEditorPane ed = HtmlToPlainText.fromHtml(area.text);
     WrappedDocument doc = new WrappedDocument((StyledDocument) ed.getDocument());
-    List<DeletionRange> deletions = new ArrayList<>();
+    new MarkupBackgroundStyleInitializer(doc, area.markups).styleChangedTextSections();
     ChangemarkDecolorer decolorer = new ChangemarkDecolorer(doc);
+    List<DeletionRange> deletions = new ArrayList<>();
     decolorer.decolor(deletions, null);
     removeDeletions(deletions, doc);
     area.text = ed.getText();

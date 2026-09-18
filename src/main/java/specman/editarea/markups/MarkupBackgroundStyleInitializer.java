@@ -29,8 +29,12 @@ public class MarkupBackgroundStyleInitializer {
   }
 
   public MarkupBackgroundStyleInitializer(TextEditArea textEditArea, List<Markup_V002> markups) {
-    this.doc = textEditArea.getWrappedDocument();
-    this.model = markups.stream().map(MarkupEntry::from).toList();
+    this(textEditArea.getWrappedDocument(), markups);
+  }
+
+  public MarkupBackgroundStyleInitializer(WrappedDocument doc, List<Markup_V002> markups) {
+    this.doc = doc;
+    this.model = markups != null ? markups.stream().map(MarkupEntry::from).toList() : List.of();
   }
 
   private List<StyledSection> model2StyledSections(List<MarkupEntry> model) {
