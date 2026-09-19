@@ -33,13 +33,13 @@ public class MarkupRecovery {
       recoverSkippedWhitespaceMarks(nextTargetVisibleCharSeqStart, nextSourceVisibleCharSeqStart);
       recoverVisibleCharMarks(nextTargetVisibleCharSeqStart, nextSourceVisibleCharSeqStart);
     }
-    while(nextTargetVisibleCharSeqStart != null);
+    while(nextTargetVisibleCharSeqStart != null && nextSourceVisibleCharSeqStart != null);
 
     return assembleMarkupsFromMarkupsPerChar();
   }
 
   private void recoverVisibleCharMarks(WrappedPosition targetPos, Integer sourcePos) {
-    if (targetPos == null) {
+    if (targetPos == null || sourcePos == null) {
       return;
     }
     do {
@@ -52,9 +52,10 @@ public class MarkupRecovery {
     sourceProgress = sourcePos;
   }
 
-  /** TODO: Skipped whitespaces might also have changemarks, which need to be recovered. */
   private void recoverSkippedWhitespaceMarks(WrappedPosition targetVisibleCharSeqStart, Integer sourceVisibleCharSeqStart) {
-    if (targetVisibleCharSeqStart == null || targetVisibleCharSeqStart.equals(targetProgress)) {
+    if (sourceVisibleCharSeqStart == null ||
+      targetVisibleCharSeqStart == null ||
+      targetVisibleCharSeqStart.equals(targetProgress)) {
       return;
     }
     int targetWhitespaceLen = targetWhitespaceLen(targetVisibleCharSeqStart);
