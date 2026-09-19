@@ -2,6 +2,7 @@ package specman.editarea.keylistener;
 
 import specman.clipboard.SpecmanTextTransferable;
 import specman.editarea.TextEditArea;
+import specman.model.v002.TextEditAreaModel_V002;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -10,6 +11,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   PasteKeyPressedHandler(TextEditArea textArea, KeyEvent keyEvent) {
@@ -22,13 +24,9 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       Transferable contents = clipboard.getContents(null);
       if (contents != null) {
         if (contents.isDataFlavorSupported(SpecmanTextTransferable.SPECMAN_TEXT_FLAVOR)) {
-          // TODO: use formatted content from Specman flavor (HTML + markups)
-          // Insert plain text directly — do NOT touch the clipboard so external apps
-          // (Word etc.) can still paste the original formatted content afterwards.
-          String plain = (String) contents.getTransferData(DataFlavor.stringFlavor);
-          if (plain != null && !plain.isEmpty()) {
-            textArea.replaceSelection(plain);
-          }
+          TextEditAreaModel_V002 model = (TextEditAreaModel_V002)
+              contents.getTransferData(SpecmanTextTransferable.SPECMAN_TEXT_FLAVOR);
+          pasteFormatted(model, contents, clipboard);
           event.consume();
           return;
         }
@@ -50,4 +48,18 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     }
   }
 
+  private void pasteFormatted(TextEditAreaModel_V002 model, Transferable specmanTransferable, Clipboard clipboard) {
+    // Build a temp area from the model with no markups so only HTML formatting
+    // (bold, italic etc.) is pasted — Specman-specific coloring is left for later rounds.
+    TextEditAreaModel_V002 formattingOnly = new TextEditAreaModel_V002(
+        model.text, model.plainText, new ArrayList<>(), (specman.ChangeInfo) null);
+    TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
+    temp.selectAll();
+    temp.copy();
+    textArea.paste();
+    clipboard.setContents(specmanTransferable, null); // restore so further pastes still work
+    // TODO: apply non-change markups (Steplinks) to the pasted range
+    // TODO: register pasted Steplinks in the referenced steps
+    // TODO: mark pasted range as Added in current changeset if tracking is on
+  }
 }
