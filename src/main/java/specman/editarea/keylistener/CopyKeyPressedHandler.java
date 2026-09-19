@@ -10,9 +10,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-class CopyTextKeyPressedHandler extends AbstractKeyEventHandler {
+class CopyKeyPressedHandler extends AbstractKeyEventHandler {
 
-  CopyTextKeyPressedHandler(TextEditArea textArea, KeyEvent event) {
+  CopyKeyPressedHandler(TextEditArea textArea, KeyEvent event) {
     super(textArea, event);
   }
 

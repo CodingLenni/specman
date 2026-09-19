@@ -3,8 +3,14 @@ package specman.editarea.keylistener;
 import specman.editarea.TextEditArea;
 import specman.editarea.TextEditAreaAccessMixin;
 import specman.editarea.document.WrappedPosition;
+import specman.view.AbstractSchrittView;
 
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledEditorKit;
+
+import static specman.ChangeSet.changeset;
+import static specman.Specman.editor;
 
 public class AbstractKeyHandler implements TextEditAreaAccessMixin {
   protected final TextEditArea textArea;
@@ -62,6 +68,31 @@ public class AbstractKeyHandler implements TextEditAreaAccessMixin {
 
   protected void markRangeAsDeleted(WrappedPosition deleteStart, int deleteLength, MutableAttributeSet deleteStyle) {
     getWrappedDocument().setCharacterAttributes(deleteStart, deleteLength, deleteStyle, false);
+  }
+
+  public void markSelectedTextAsDeletedInModificationMode() {
+    if (!editor().aenderungenVerfolgen()) {
+      return;
+    }
+    AbstractSchrittView textOwner = editor().findeSchritt(textArea);
+    if (textOwner == null || !isEditable()) {
+      return;
+    }
+    WrappedPosition selectionStart = getWrappedSelectionStart();
+    WrappedPosition selectionEnd = getWrappedSelectionEnd();
+    if (selectionStart.equals(selectionEnd)) {
+      return;
+    }
+    if (stepnumberLinkNormalStyleSetAt(selectionStart)) {
+      markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStepnumberLinkStyle());
+    }
+    else {
+      markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStyle());
+    }
+    setSelectionStart(selectionEnd.unwrap());
+    StyledEditorKit k = getEditorKit();
+    MutableAttributeSet inputAttributes = k.getInputAttributes();
+    StyleConstants.setStrikeThrough(inputAttributes, false);
   }
 
 }

@@ -23,11 +23,17 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       if (contents != null) {
         if (contents.isDataFlavorSupported(SpecmanTextTransferable.SPECMAN_TEXT_FLAVOR)) {
           // TODO: use formatted content from Specman flavor (HTML + markups)
-          // For now fall through to plain text stripping below
+          // Insert plain text directly — do NOT touch the clipboard so external apps
+          // (Word etc.) can still paste the original formatted content afterwards.
+          String plain = (String) contents.getTransferData(DataFlavor.stringFlavor);
+          if (plain != null && !plain.isEmpty()) {
+            textArea.replaceSelection(plain);
+          }
+          event.consume();
+          return;
         }
-        // If we got string content on the clipboard, force it to become plain text for the JEditorPane
-        // paste operation. There are text sources like Microsoft Word which cause a complete mess
-        // in the resulting HTML otherwise.
+        // External content (Word etc.): strip to plain text to avoid messy HTML,
+        // then let JEditorPane's default paste action insert it.
         if (contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
           String stringOnly = (String)contents.getTransferData(DataFlavor.stringFlavor);
           contents = new StringSelection(stringOnly);

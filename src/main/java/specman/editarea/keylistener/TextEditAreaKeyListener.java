@@ -1,6 +1,5 @@
 package specman.editarea.keylistener;
 
-import specman.Specman;
 import static specman.ChangeSet.changeset;
 import specman.editarea.TextEditArea;
 import specman.editarea.document.WrappedPosition;
@@ -16,8 +15,6 @@ import java.awt.event.KeyListener;
 
 import static specman.graphics.Styles.INDIKATOR_GELOESCHT_MARKIERT;
 import static specman.graphics.Styles.SCHRITTNUMMER_FARBE;
-import specman.Specman;
-import static specman.ChangeSet.changeset;
 import static specman.graphics.Styles.DELETED_BACKGROUND_COLOR;
 import static specman.Specman.editor;
 
@@ -29,17 +26,13 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
   @Override
   public void keyPressed(KeyEvent e) {
     if (e.isControlDown() && e.getKeyCode() == 'C') {
-      new CopyTextKeyPressedHandler(textArea, e).handle();
+      keyCopyPressed(e);
     }
     if (e.isControlDown() && e.getKeyCode() == 'V') {
       keyPastePressed(e);
     }
     if (e.isControlDown() && e.getKeyCode() == 'X') {
-      new CopyTextKeyPressedHandler(textArea, e).handle();
-      markSelectedTextAsDeletedInModificationMode();
-      if (!editor().aenderungenVerfolgen()) {
-        textArea.replaceSelection("");
-      }
+      keyCutPressed(e);
     }
     switch (e.getKeyCode()) {
       case KeyEvent.VK_BACK_SPACE -> keyBackspacePressed(e);
@@ -65,13 +58,15 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
     }
   }
 
+  private void keyCutPressed(KeyEvent e) { new CutKeyPressedHandler(textArea, e).handle(); }
+
+  private void keyCopyPressed(KeyEvent e) { new CopyKeyPressedHandler(textArea, e).handle(); }
+
   private void keyBackspacePressed(KeyEvent e) { new BackspaceKeyPressedHandler(textArea, e).handle(); }
 
   private void keyDeletePressed(KeyEvent e) { new DeleteKeyPressedHandler(textArea, e).handle(); }
 
-  private void keyPastePressed(KeyEvent e) {
-    new PasteKeyPressedHandler(textArea, e).handle();
-  }
+  private void keyPastePressed(KeyEvent e) { new PasteKeyPressedHandler(textArea, e).handle(); }
 
   private void keyEnterPressed(KeyEvent e) { new EnterKeyPressedHandler(textArea, e).handle(); }
 
@@ -113,33 +108,6 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
 
   @Override
   public void keyReleased(KeyEvent e) {}
-
-  public void markSelectedTextAsDeletedInModificationMode() {
-    if (!editor().aenderungenVerfolgen()) {
-      return;
-    }
-    AbstractSchrittView textOwner = editor().findeSchritt(textArea);
-    if (textOwner != null && isEditable()) {
-      WrappedPosition selectionStart = getWrappedSelectionStart();
-      WrappedPosition selectionEnd = getWrappedSelectionEnd();
-
-      if (!selectionStart.equals(selectionEnd)) {
-        if (stepnumberLinkNormalStyleSetAt(selectionStart)) {
-          markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStepnumberLinkStyle());
-        } else {
-          markRangeAsDeleted(selectionStart, selectionEnd.distance(selectionStart), changeset().getDeletedStyle());
-        }
-
-        setSelectionStart(selectionEnd.unwrap());
-        // Jetzt ist am Ende der vorherigen Selektion noch der Geloescht-Stil gesetzt
-        // D.h. die Durchstreichung muss noch weg für das neue Zeichen, das gerade
-        // eingefügt werden soll
-        StyledEditorKit k = (StyledEditorKit) getEditorKit();
-        MutableAttributeSet inputAttributes = k.getInputAttributes();
-        StyleConstants.setStrikeThrough(inputAttributes, false);
-      }
-    }
-  }
 
   public void standardStilSetzenWennNochNichtVorhanden() {
     if (!ganzerSchrittGeloeschtStilGesetzt()) {

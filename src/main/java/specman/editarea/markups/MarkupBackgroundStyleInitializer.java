@@ -11,7 +11,7 @@ import java.util.List;
 
 import static specman.graphics.Styles.standardTextBackground;
 
-/** The yellow background of text sections being marked as changed, is <i>not</i> included
+/** The colored background of text sections being marked as changed, is <i>not</i> included
  * in the HTML content of a text area. The styling must therefore be initialized from the
  * markup list in the model. The same applies to the background graphics for stepnumber links
  * and the combination of both. Important detail: text without change-style, following a

@@ -7,7 +7,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 /** Multi-flavor clipboard transferable for Specman steps. Offers the Specman-native flavor
  * (carrying instance ID + serialized content as a structured object) and plain text as fallback
  * for interoperability with external tools. */
-public class SpecmanTransferable implements Transferable {
+public class SpecmanStepsTransferable implements Transferable {
 
   public static final DataFlavor SPECMAN_STEPS_FLAVOR =
       new DataFlavor(SpecmanClipboardContent.class, "Specman Steps");
@@ -16,7 +16,7 @@ public class SpecmanTransferable implements Transferable {
 
   private final SpecmanClipboardContent content;
 
-  public SpecmanTransferable(SpecmanClipboardContent content) {
+  public SpecmanStepsTransferable(SpecmanClipboardContent content) {
     this.content = content;
   }
 

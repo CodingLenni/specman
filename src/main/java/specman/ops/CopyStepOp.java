@@ -1,7 +1,7 @@
 package specman.ops;
 
 import specman.clipboard.SpecmanClipboardContent;
-import specman.clipboard.SpecmanTransferable;
+import specman.clipboard.SpecmanStepsTransferable;
 import specman.model.v002.AbstractStepModel_V002;
 import specman.model.v002.io.ModelSerializer_V002;
 import specman.undo.manager.UndoRecording;
@@ -26,7 +26,7 @@ public class CopyStepOp {
       AbstractStepModel_V002 model = step.generiereModel(true);
       String serialized = new ModelSerializer_V002().serializeStep(model);
       SpecmanClipboardContent content = new SpecmanClipboardContent(editor().instanceId(), serialized);
-      Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new SpecmanTransferable(content), null);
+      Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new SpecmanStepsTransferable(content), null);
     }
   }
 }

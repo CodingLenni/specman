@@ -2,7 +2,7 @@ package specman.ops;
 
 import specman.EditException;
 import specman.clipboard.SpecmanClipboardContent;
-import specman.clipboard.SpecmanTransferable;
+import specman.clipboard.SpecmanStepsTransferable;
 import specman.clipboard.ExternalPasteChangemarksAdjuster;
 import specman.clipboard.InternalPasteChangemarksAdjuster;
 import specman.clipboard.PasteChangemarksAdjusterI;
@@ -75,8 +75,8 @@ public class PasteStepsOp extends AbstractADBLSpecmanOp {
   private SpecmanClipboardContent readClipboard() {
     try {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-      if (clipboard.isDataFlavorAvailable(SpecmanTransferable.SPECMAN_STEPS_FLAVOR)) {
-        return (SpecmanClipboardContent) clipboard.getData(SpecmanTransferable.SPECMAN_STEPS_FLAVOR);
+      if (clipboard.isDataFlavorAvailable(SpecmanStepsTransferable.SPECMAN_STEPS_FLAVOR)) {
+        return (SpecmanClipboardContent) clipboard.getData(SpecmanStepsTransferable.SPECMAN_STEPS_FLAVOR);
       }
       String text = (String) clipboard.getData(DataFlavor.stringFlavor);
       return (text != null && !text.isBlank()) ? new SpecmanClipboardContent(null, text) : null;
