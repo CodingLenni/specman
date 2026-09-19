@@ -35,8 +35,11 @@ class CopyKeyPressedHandler extends AbstractKeyEventHandler {
     return clipboard.getContents(null);
   }
 
+  /** Builds the clipboard model for the selected text. Uses {@code dec()} on the selection
+   * end because {@link TextEditArea#copySection} treats toPosition as inclusive, whereas
+   * JTextComponent's {@code getSelectionEnd()} is exclusive. */
   private TextEditAreaModel_V002 buildSelectionModel() {
     return textArea.copySection(
-        getWrappedSelectionStart(), getWrappedSelectionEnd()).getTextWithMarkups(true);
+        getWrappedSelectionStart(), getWrappedSelectionEnd().dec()).getTextWithMarkups(true);
   }
 }
