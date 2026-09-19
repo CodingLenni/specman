@@ -20,11 +20,19 @@ class CopyKeyPressedHandler extends AbstractKeyEventHandler {
       return;
     }
     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    textArea.copy();
-    Transferable original = clipboard.getContents(null);
+    Transferable original = createOriginalJEditorPaneTransferable(clipboard);
     TextEditAreaModel_V002 content = buildSelectionModel();
     clipboard.setContents(new SpecmanTextTransferable(content, original), null);
     event.consume();
+  }
+
+  /** JEditorPane's copy action produces a multi-flavor transferable (HTML, RTF, plain text etc.)
+   * that external apps like Word need for formatted paste. We trigger it to capture that
+   * transferable, then wrap it with our Specman flavor on top — external apps delegate
+   * transparently, Specman paste gets the Specman flavor. */
+  private Transferable createOriginalJEditorPaneTransferable(Clipboard clipboard) {
+    textArea.copy();
+    return clipboard.getContents(null);
   }
 
   private TextEditAreaModel_V002 buildSelectionModel() {
