@@ -1,5 +1,6 @@
 package specman.editarea.keylistener;
 
+import specman.clipboard.SpecmanTextTransferable;
 import specman.editarea.TextEditArea;
 
 import java.awt.*;
@@ -20,6 +21,10 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       Transferable contents = clipboard.getContents(null);
       if (contents != null) {
+        if (contents.isDataFlavorSupported(SpecmanTextTransferable.SPECMAN_TEXT_FLAVOR)) {
+          // TODO: use formatted content from Specman flavor (HTML + markups)
+          // For now fall through to plain text stripping below
+        }
         // If we got string content on the clipboard, force it to become plain text for the JEditorPane
         // paste operation. There are text sources like Microsoft Word which cause a complete mess
         // in the resulting HTML otherwise.

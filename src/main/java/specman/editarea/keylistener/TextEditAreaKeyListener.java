@@ -28,11 +28,18 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
 
   @Override
   public void keyPressed(KeyEvent e) {
+    if (e.isControlDown() && e.getKeyCode() == 'C') {
+      new CopyTextKeyPressedHandler(textArea, e).handle();
+    }
     if (e.isControlDown() && e.getKeyCode() == 'V') {
       keyPastePressed(e);
     }
     if (e.isControlDown() && e.getKeyCode() == 'X') {
+      new CopyTextKeyPressedHandler(textArea, e).handle();
       markSelectedTextAsDeletedInModificationMode();
+      if (!editor().aenderungenVerfolgen()) {
+        textArea.replaceSelection("");
+      }
     }
     switch (e.getKeyCode()) {
       case KeyEvent.VK_BACK_SPACE -> keyBackspacePressed(e);
