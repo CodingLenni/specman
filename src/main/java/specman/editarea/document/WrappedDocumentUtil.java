@@ -6,7 +6,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.html.CSS;
 
-import static specman.ChangeSet.changeset;
 import static specman.ChangeSet.STEPNUMBER_LINK_COLOR;
 
 public class WrappedDocumentUtil {
@@ -38,7 +37,7 @@ public class WrappedDocumentUtil {
   }
 
   public static boolean stepnumberLinkChangedStyleSet(WrappedElement element) {
-    return stepnumberLinkChangedStyleSet(element, changeset());
+    return stepnumberLinkChangedStyleSet(element, null);
   }
 
   public static boolean stepnumberLinkChangedStyleSet(WrappedElement element, ChangeSet cs) {
