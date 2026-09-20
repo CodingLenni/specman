@@ -68,34 +68,39 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   private void pasteFormatted(TextEditAreaModel_V002 model, Transferable specmanTransferable, Clipboard clipboard) throws Exception {
-    List<Markup_V002> nonChangeMarkups = model.markups != null
-        ? model.markups.stream()
-            .filter(m -> !m.type.marksChange() || m.type.isSteplink())
-            .map(m -> m.type == MarkupType.ChangedSteplink
-                ? new Markup_V002(m.from, m.to, MarkupType.Steplink, null)
-                : m)
-            .collect(Collectors.toList())
-        : new ArrayList<>();
-    if (isTrackingChanges()) {
-      nonChangeMarkups = nonChangeMarkups.stream()
-          .map(m -> m.type == MarkupType.Steplink
-              ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
-              : m)
-          .collect(Collectors.toList());
-    }
+    List<Markup_V002> steplinkOnlyMarkups = createSteplinkOnlyMarkups(model);
     TextEditAreaModel_V002 formattingOnly = new TextEditAreaModel_V002(
-        model.text, model.plainText, nonChangeMarkups, (specman.ChangeInfo) null);
+        model.text, model.plainText, steplinkOnlyMarkups, (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
     if (hasMultipleParagraphs(temp)) {
-      pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
+      pasteMultipleParagraphs(temp, steplinkOnlyMarkups, specmanTransferable, clipboard);
     }
     else {
-      pasteSingleParagraph(temp, nonChangeMarkups, clipboard);
+      pasteSingleParagraph(temp, steplinkOnlyMarkups, clipboard);
     }
     AbstractSchrittView step = editor().findeSchritt(textArea);
     if (step != null) {
       step.registerAllExistingStepnumbers();
     }
+  }
+
+  private List<Markup_V002> createSteplinkOnlyMarkups(TextEditAreaModel_V002 model) {
+    List<Markup_V002> steplinkOnlyMarkups = model.markups != null
+      ? model.markups.stream()
+        .filter(m -> m.type.isSteplink())
+        .map(m -> m.type == MarkupType.ChangedSteplink
+                  ? new Markup_V002(m.from, m.to, MarkupType.Steplink, null)
+                  : m)
+        .collect(Collectors.toList())
+      : new ArrayList<>();
+    if (isTrackingChanges()) {
+      steplinkOnlyMarkups = steplinkOnlyMarkups.stream()
+        .map(m -> m.type == MarkupType.Steplink
+          ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
+          : m)
+        .collect(Collectors.toList());
+    }
+    return steplinkOnlyMarkups;
   }
 
   /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves
