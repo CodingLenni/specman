@@ -7,7 +7,6 @@ import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
 import specman.editarea.document.WrappedBadLocationException;
-import specman.editarea.markups.MarkupType;
 import specman.editarea.markups.TextMarkup;
 import specman.model.v002.Markup_V002;
 import specman.undo.manager.UndoRecording;
@@ -103,7 +102,7 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
    * and must be restored to the original Specman transferable afterwards.
    * Background colors (Steplinks, changeset) are stripped by WysiwygHTMLEditorKit
    * during paste and must be re-applied explicitly. */
-  private void pasteMultipleParagraphs(TextEditArea temp, List<Markup_V002> nonChangeMarkups,
+  private void pasteMultipleParagraphs(TextEditArea temp, List<Markup_V002> steplinkOnlyMarkups,
                                        Transferable specmanTransferable, Clipboard clipboard) {
     int caretUIBefore = textArea.getCaretPosition();
     int caretModelBefore = getWrappedCaretPosition().toModel();
@@ -116,9 +115,9 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
           .setCharacterAttributes(caretUIBefore, caretAfter - caretUIBefore,
               changeset().textBackground(), false);
     }
-    if (!nonChangeMarkups.isEmpty()) {
+    if (!steplinkOnlyMarkups.isEmpty()) {
       int offset = caretModelBefore + 1; // +1 for leading structural \n that paste inserts
-      applySteplinkColors(nonChangeMarkups, offset);
+      applySteplinkColors(steplinkOnlyMarkups, offset);
     }
     clipboard.setContents(specmanTransferable, null);
   }
@@ -174,8 +173,12 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   private void collectLeaves(WrappedElement e, List<WrappedElement> leaves) {
-    if (e.getElementCount() == 0) leaves.add(e);
-    else for (int i = 0; i < e.getElementCount(); i++) collectLeaves(e.getElement(i), leaves);
+    if (e.getElementCount() == 0) {
+      leaves.add(e);
+    }
+    else {
+      for (int i = 0; i < e.getElementCount(); i++) collectLeaves(e.getElement(i), leaves);
+    }
   }
 
   private boolean hasMultipleParagraphs(TextEditArea temp) {
