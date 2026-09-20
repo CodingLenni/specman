@@ -1,5 +1,7 @@
 package specman.model.v002;
 
+import org.jetbrains.annotations.Nullable;
+import specman.ChangeSet;
 import specman.editarea.markups.MarkupType;
 import specman.editarea.markups.TextMarkup;
 
