@@ -9,6 +9,7 @@ import specman.editarea.document.WrappedBadLocationException;
 import specman.editarea.markups.MarkupBackgroundStyleInitializer;
 import specman.editarea.markups.MarkupType;
 import specman.model.v002.Markup_V002;
+import specman.undo.manager.UndoRecording;
 import specman.model.v002.TextEditAreaModel_V002;
 import specman.view.AbstractSchrittView;
 
@@ -79,15 +80,17 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     TextEditAreaModel_V002 formattingOnly = new TextEditAreaModel_V002(
         model.text, model.plainText, nonChangeMarkups, (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
-    if (hasMultipleParagraphs(temp)) {
-      pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
-    }
-    else {
-      pasteSingleParagraph(temp, clipboard);
-    }
-    AbstractSchrittView step = editor().findeSchritt(textArea);
-    if (step != null) {
-      step.registerAllExistingStepnumbers();
+    try (UndoRecording ur = editor().composeUndo()) {
+      if (hasMultipleParagraphs(temp)) {
+        pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
+      }
+      else {
+        pasteSingleParagraph(temp, clipboard);
+      }
+      AbstractSchrittView step = editor().findeSchritt(textArea);
+      if (step != null) {
+        step.registerAllExistingStepnumbers();
+      }
     }
   }
 
