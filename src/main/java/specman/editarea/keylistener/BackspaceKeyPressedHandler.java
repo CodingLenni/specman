@@ -51,8 +51,8 @@ class BackspaceKeyPressedHandler extends AbstractRemovalKeyPressedHandler {
    * ends with an invisible newline. However, when the user types RETURN at the end of
    * the text, this causes a new empty line to appear in the UI without any change in
    * the document. The ending newline is now visible, so to say, and the use can not
-   * get rid of it by default. So we check for this situation here and cleen up the
-   * text by re-resetting the complete content which causes thr UI to be corrected. */
+   * get rid of it by default. So we check for this situation here and clean up the
+   * text by re-resetting the complete content which causes the UI to be corrected. */
   private boolean removeTrailingEmptyLine() {
     WrappedPosition caretPositon = getWrappedCaretPosition();
     WrappedPosition startOffset = getWrappedSelectionStart();
