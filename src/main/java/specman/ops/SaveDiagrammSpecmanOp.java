@@ -46,7 +46,9 @@ public class SaveDiagrammSpecmanOp extends AbstractSpecmanOp {
         setDiagrammDatei(new File(ausgewaehlterDateiname));
       }
       saveToFile(getDiagrammDatei());
-      long wcTimestamp = AutoSaveOp.createWorkingCopyFor(getDiagrammDatei());
+      long wcTimestamp = AutoSaveOp.isWorkingCopyNeeded()
+          ? AutoSaveOp.createWorkingCopyFor(getDiagrammDatei())
+          : 0;
       if (!getDiagrammDatei().equals(previousFile)) {
         AutoSaveOp.deleteWorkingCopyFor(previousFile);
       }

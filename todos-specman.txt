@@ -4,14 +4,14 @@ x Paste
   x Referenzen auf nicht existierende Schritte als ungültig markieren
   x Undo / Redo
   x Für Schritte aus derselben Instanz
-  - Für Schritte aus einer anderen Instanz
-- Cut
+  x Für Schritte aus einer anderen Instanz
+x Cut
   x Warnmeldung bei drohendem Verlust von Catchs
-  - Undo / Redo
+  x Undo / Redo
 - Icons für Kontextmenüpunkte
 
 Aus aktueller Anwendung
-- .wrk entsteht auch, wenn man weder Autosave noch Autoload eingeschaltet hat
+x .wrk entsteht auch, wenn man weder Autosave noch Autoload eingeschaltet hat
 - beim Öffnen und einer vorhandenen .wrk, *drei* Optionen: 1) nicht laden, 2) laden, 3) ist in Arbeit - nicht laden aber auch nicht überschreiben und beim Schließen löschen
 - Drücken von DELETE entfernt keine Zeilenumbruch hin zu einer leeren Folgezeile. Das gleiche Problem, wie ursprünglich auch bei BACKSPACE. Lösung vielleicht dort abkupfern
 - Beim Suchen wird die gefundene Stelle im Text nicht markiert. Könnte allerdings ein reines Linux-Problem sein.

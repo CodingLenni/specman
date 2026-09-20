@@ -1,6 +1,7 @@
 package specman.ops;
 
 import specman.ScrollPause;
+import specman.settings.SettingAutoLoad;
 import specman.settings.SettingAutoSave;
 import specman.undo.manager.UndoRecording;
 
@@ -59,6 +60,10 @@ public class AutoSaveOp extends AbstractSpecmanOp {
   private static int timerDelay() {
     Integer intervalSeconds = SettingAutoSave.getIntervalSeconds();
     return intervalSeconds != null ? intervalSeconds * 1000 : OFF_CHECK_INTERVAL_MS;
+  }
+
+  public static boolean isWorkingCopyNeeded() {
+    return SettingAutoSave.getIntervalSeconds() != null || SettingAutoLoad.getIntervalSeconds() != null;
   }
 
   public static File workingCopyFor(File nsdFile) {
