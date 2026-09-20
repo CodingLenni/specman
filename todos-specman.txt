@@ -11,9 +11,9 @@ x Cut
 - Icons für Kontextmenüpunkte
 
 Aus aktueller Anwendung
-x .wrk entsteht auch, wenn man weder Autosave noch Autoload eingeschaltet hat
 - beim Öffnen und einer vorhandenen .wrk, *drei* Optionen: 1) nicht laden, 2) laden, 3) ist in Arbeit - nicht laden aber auch nicht überschreiben und beim Schließen löschen
-- Drücken von DELETE entfernt keine Zeilenumbruch hin zu einer leeren Folgezeile. Das gleiche Problem, wie ursprünglich auch bei BACKSPACE. Lösung vielleicht dort abkupfern
+x .wrk entsteht auch, wenn man weder Autosave noch Autoload eingeschaltet hat
+x Drücken von DELETE entfernt keine Zeilenumbruch hin zu einer leeren Folgezeile. Das gleiche Problem, wie ursprünglich auch bei BACKSPACE. Lösung vielleicht dort abkupfern
 - Beim Suchen wird die gefundene Stelle im Text nicht markiert. Könnte allerdings ein reines Linux-Problem sein.
 - PDF-Option "Export beim Speichern"
 - Hoch/Runter über Grenzen von Schritten wäre cool

@@ -23,6 +23,10 @@ class DeleteKeyPressedHandler extends AbstractRemovalKeyPressedHandler {
       event.consume();
       return;
     }
+    if (removeTrailingEmptyLine()) {
+      event.consume();
+      return;
+    }
     if (isTrackingChanges()) {
       handleTextDeletion();
       event.consume();
@@ -35,6 +39,23 @@ class DeleteKeyPressedHandler extends AbstractRemovalKeyPressedHandler {
       // We are about to merge two paragraphs, so must ensure markup recovery
       backupMarkupsAndRecoverAfterDefaultKeyOperation();
     }
+  }
+
+  /** Symmetric to BackspaceKeyPressedHandler#removeTrailingEmptyLine: when the caret
+   * stands at the end of the second-to-last line (character at caret is a paragraph
+   * boundary and the next position is the last), Delete would try to enter the trailing
+   * empty line rather than remove it. cleanupText() fixes the UI instead. */
+  private boolean removeTrailingEmptyLine() {
+    WrappedPosition caretPos = getWrappedCaretPosition();
+    if (getWrappedSelectionStart().equals(getWrappedSelectionEnd())
+        && ParagraphBoundary.at(caretPos)
+        && caretPos.inc().isLast()) {
+      try (UndoRecording ur = editor().composeUndo()) {
+        cleanupText();
+      }
+      return true;
+    }
+    return false;
   }
 
   void removeStepnumberLinkAfter() {
