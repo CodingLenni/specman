@@ -666,13 +666,16 @@ public class TextEditArea extends JEditorPane implements EditArea<TextEditAreaMo
     }
 
     public void updateStepnumberLink(String oldID, String newID) {
-        for (WrappedElement e : getWrappedDocument().getRootElements()) {
-            if (replaceStepnumberLink(e, oldID, newID)) {
-                return;
-            }
-        }
-        throw new RuntimeException("Could not find old StepnumberLink " + oldID + " in TextArea '" + getPlainText() + "'."
+        List<WrappedElement> allLinks = findStepnumberLinks();
+        List<WrappedElement> matching = allLinks.stream()
+            .filter(e -> oldID.equals(getStepnumberLinkIDFromElement(e)))
+            .sorted((a, b) -> b.getStartOffset().toModel() - a.getStartOffset().toModel())
+            .collect(Collectors.toList());
+        if (matching.isEmpty()) {
+            throw new RuntimeException("Could not find old StepnumberLink " + oldID + " in TextArea '" + getPlainText() + "'."
                 + " This indicates a missing unregisterStepnumberLink() call.");
+        }
+        matching.forEach(e -> replaceStepnumberLink(e, oldID, newID));
     }
 
     /** Replaces the text of a specific steplink element by position, not by text-match.
