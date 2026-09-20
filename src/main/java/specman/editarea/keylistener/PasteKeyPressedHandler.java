@@ -86,13 +86,14 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   private List<Markup_V002> createSteplinkOnlyMarkups(TextEditAreaModel_V002 model) {
-    if (model.markups == null) return new ArrayList<>();
-    return model.markups.stream()
+    if (model.markups != null) {
+      ChangeSet targetChangeset = isTrackingChanges() ? changeset() : null;
+      return model.markups.stream()
         .filter(m -> m.type.isSteplink())
-        .map(m -> isTrackingChanges()
-            ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
-            : new Markup_V002(m.from, m.to, MarkupType.Steplink, null))
+        .map(m -> m.assign(targetChangeset))
         .collect(Collectors.toList());
+    }
+    return new ArrayList<>();
   }
 
   /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves

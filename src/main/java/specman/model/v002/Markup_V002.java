@@ -49,4 +49,9 @@ public class Markup_V002 {
     public String toString() {
         return from + ".." + to;
     }
+
+  public Markup_V002 assign(@Nullable ChangeSet targetChangeset) {
+    MarkupType newType = this.type.assign(targetChangeset);
+    return new Markup_V002(from, to, newType, targetChangeset != null ? targetChangeset.name : null);
+  }
 }
