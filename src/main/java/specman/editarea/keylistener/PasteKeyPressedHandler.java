@@ -71,7 +71,9 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
 
   /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves
    * HTML structure and paragraph types. Formatting comes for free; in change tracking
-   * mode the changeset color must be applied explicitly to the inserted range. */
+   * mode the changeset color must be applied explicitly to the inserted range.
+   * The clipboard is temporarily replaced with the temp area's content for the paste,
+   * and must be restored to the original Specman transferable afterwards. */
   private void pasteMultipleParagraphs(TextEditArea temp, Transferable specmanTransferable, Clipboard clipboard) {
     int caretBefore = textArea.getCaretPosition();
     temp.selectAll();
