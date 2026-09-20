@@ -24,5 +24,4 @@ public enum MarkupType {
     Object backgroundColorValue = element.getAttributes().getAttribute(CSS.Attribute.BACKGROUND_COLOR);
     return backgroundColorValue != null ? backgroundColorValue.toString() : null;
   }
-
 }

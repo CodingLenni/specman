@@ -1,5 +1,6 @@
 package specman.editarea.keylistener;
 
+import specman.ChangeSet;
 import specman.clipboard.SpecmanTextTransferable;
 import specman.editarea.TextEditArea;
 import specman.editarea.document.WrappedDocument;
@@ -85,22 +86,13 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   private List<Markup_V002> createSteplinkOnlyMarkups(TextEditAreaModel_V002 model) {
-    List<Markup_V002> steplinkOnlyMarkups = model.markups != null
-      ? model.markups.stream()
+    if (model.markups == null) return new ArrayList<>();
+    return model.markups.stream()
         .filter(m -> m.type.isSteplink())
-        .map(m -> m.type == MarkupType.ChangedSteplink
-                  ? new Markup_V002(m.from, m.to, MarkupType.Steplink, null)
-                  : m)
-        .collect(Collectors.toList())
-      : new ArrayList<>();
-    if (isTrackingChanges()) {
-      steplinkOnlyMarkups = steplinkOnlyMarkups.stream()
-        .map(m -> m.type == MarkupType.Steplink
-          ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
-          : m)
+        .map(m -> isTrackingChanges()
+            ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
+            : new Markup_V002(m.from, m.to, MarkupType.Steplink, null))
         .collect(Collectors.toList());
-    }
-    return steplinkOnlyMarkups;
   }
 
   /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves
