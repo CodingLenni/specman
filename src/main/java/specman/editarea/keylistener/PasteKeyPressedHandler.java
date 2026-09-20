@@ -72,18 +72,17 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       WrappedDocument wd = getWrappedDocument();
       Action deletePrev = textArea.getActionMap().get(DefaultEditorKit.deletePrevCharAction);
 
-      // Remove trailing structural \n: caret right after it, then delete-previous
-      if (actualInserted > expectedLen && deletePrev != null) {
-        textArea.setCaretPosition(caretPos + actualInserted);
-        deletePrev.actionPerformed(new java.awt.event.ActionEvent(textArea, 0, ""));
-      }
       // Remove leading structural \n: caret right after it, then delete-previous
       if (actualInserted > expectedLen && deletePrev != null) {
         textArea.setCaretPosition(caretPos + 1);
-        deletePrev.actionPerformed(new java.awt.event.ActionEvent(textArea, 0, ""));
+        deletePrev.actionPerformed(new ActionEvent(textArea, 0, ""));
       }
-
-      textArea.setCaretPosition(Math.min(caretPos + expectedLen - 1, textArea.getDocument().getLength()));
+      // Remove trailing structural \n: caret right after it (shifted by leading removal), then delete-previous
+      // Caret naturally lands at caretPos + expectedLen = right after pasted content
+      if (actualInserted > expectedLen && deletePrev != null) {
+        textArea.setCaretPosition(caretPos + actualInserted - 1);
+        deletePrev.actionPerformed(new ActionEvent(textArea, 0, ""));
+      }
       // TODO: apply Steplink background markups to the inserted range
       // TODO: register pasted Steplinks in the referenced steps
       // TODO: mark pasted range as Added in current changeset if tracking is on
