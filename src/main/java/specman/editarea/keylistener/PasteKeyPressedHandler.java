@@ -71,6 +71,9 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       textArea.replaceSelection("");
       int insertStart = textArea.getCaretPosition();
       String plainText = (String)clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
+      // replaceSelection uses the StyledEditorKit's current input attributes, which
+      // aenderungsStilSetzenWennNochNichtVorhanden() already set to the changeset color
+      // in change tracking mode — so inserted text is automatically colored correctly.
       textArea.replaceSelection(plainText);
       applyCharacterFormatting(temp, insertStart);
       // TODO: apply Steplink backgrounds
