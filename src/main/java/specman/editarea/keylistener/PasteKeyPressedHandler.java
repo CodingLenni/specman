@@ -6,6 +6,9 @@ import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
 import specman.editarea.document.WrappedBadLocationException;
+import specman.editarea.markups.MarkupBackgroundStyleInitializer;
+import specman.editarea.markups.MarkupType;
+import specman.model.v002.Markup_V002;
 import specman.model.v002.TextEditAreaModel_V002;
 import specman.view.AbstractSchrittView;
 
@@ -20,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
@@ -62,11 +66,21 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   private void pasteFormatted(TextEditAreaModel_V002 model, Transferable specmanTransferable, Clipboard clipboard) throws Exception {
+    List<Markup_V002> nonChangeMarkups = model.markups != null
+        ? model.markups.stream().filter(m -> !m.type.marksChange()).collect(Collectors.toList())
+        : new ArrayList<>();
+    if (isTrackingChanges()) {
+      nonChangeMarkups = nonChangeMarkups.stream()
+          .map(m -> m.type == MarkupType.Steplink
+              ? new Markup_V002(m.from, m.to, MarkupType.ChangedSteplink, changeset().name)
+              : m)
+          .collect(Collectors.toList());
+    }
     TextEditAreaModel_V002 formattingOnly = new TextEditAreaModel_V002(
-        model.text, model.plainText, new ArrayList<>(), (specman.ChangeInfo) null);
+        model.text, model.plainText, nonChangeMarkups, (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
     if (hasMultipleParagraphs(temp)) {
-      pasteMultipleParagraphs(temp, specmanTransferable, clipboard);
+      pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
     }
     else {
       pasteSingleParagraph(temp, clipboard);
@@ -81,17 +95,28 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
    * HTML structure and paragraph types. Formatting comes for free; in change tracking
    * mode the changeset color must be applied explicitly to the inserted range.
    * The clipboard is temporarily replaced with the temp area's content for the paste,
-   * and must be restored to the original Specman transferable afterwards. */
-  private void pasteMultipleParagraphs(TextEditArea temp, Transferable specmanTransferable, Clipboard clipboard) {
-    int caretBefore = textArea.getCaretPosition();
+   * and must be restored to the original Specman transferable afterwards.
+   * Background colors (Steplinks, changeset) are stripped by WysiwygHTMLEditorKit
+   * during paste and must be re-applied explicitly. */
+  private void pasteMultipleParagraphs(TextEditArea temp, List<Markup_V002> nonChangeMarkups,
+                                       Transferable specmanTransferable, Clipboard clipboard) {
+    int caretUIBefore = textArea.getCaretPosition();
+    int caretModelBefore = getWrappedCaretPosition().toModel();
     temp.selectAll();
     temp.copy();
     textArea.paste();
     if (isTrackingChanges()) {
       int caretAfter = textArea.getCaretPosition();
       ((StyledDocument) textArea.getDocument())
-          .setCharacterAttributes(caretBefore, caretAfter - caretBefore,
+          .setCharacterAttributes(caretUIBefore, caretAfter - caretUIBefore,
               changeset().textBackground(), false);
+    }
+    if (!nonChangeMarkups.isEmpty()) {
+      int offset = caretModelBefore + 1; // +1 for leading structural \n that paste inserts
+      List<Markup_V002> adjustedMarkups = nonChangeMarkups.stream()
+          .map(m -> new Markup_V002(m.from + offset, m.to + offset, m.type, m.changeset))
+          .collect(Collectors.toList());
+      new MarkupBackgroundStyleInitializer(textArea, adjustedMarkups).styleChangedTextSections();
     }
     clipboard.setContents(specmanTransferable, null);
   }
