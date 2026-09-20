@@ -478,7 +478,7 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 	 * calling {@link Specman#findStepByStepID(String)} more than once for the same step.
 	 * However, to benefit from such a cache it would need to be shared with other {@link AbstractSchrittView}s
 	 */
-	protected void registerAllExistingStepnumbers() {
+	public void registerAllExistingStepnumbers() {
     editContainer.registerAllExistingStepnumbers();
 	}
 
@@ -555,7 +555,9 @@ abstract public class AbstractSchrittView implements KlappbarerBereichI, Compone
 	}
 
 	public void registerStepnumberLink(TextEditArea textEditArea) {
-		referencedByTextEditAreas.add(textEditArea);
+		if (!referencedByTextEditAreas.contains(textEditArea)) {
+			referencedByTextEditAreas.add(textEditArea);
+		}
 	}
 
 	public void unregisterStepnumberLink(TextEditArea textEditArea) {

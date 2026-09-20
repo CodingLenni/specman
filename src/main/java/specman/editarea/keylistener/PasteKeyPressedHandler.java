@@ -7,6 +7,9 @@ import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
 import specman.editarea.document.WrappedBadLocationException;
 import specman.model.v002.TextEditAreaModel_V002;
+import specman.view.AbstractSchrittView;
+
+import static specman.Specman.editor;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -68,6 +71,10 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     else {
       pasteSingleParagraph(temp, clipboard);
     }
+    AbstractSchrittView step = editor().findeSchritt(textArea);
+    if (step != null) {
+      step.registerAllExistingStepnumbers();
+    }
   }
 
   /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves
@@ -100,7 +107,6 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     String plainText = (String) clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
     textArea.replaceSelection(plainText);
     applyCharacterFormatting(temp, insertStart);
-    // TODO: apply Steplink backgrounds
   }
 
   private void applyCharacterFormatting(TextEditArea source, int insertStart) {
