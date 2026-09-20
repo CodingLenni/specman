@@ -15,6 +15,10 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyledDocument;
 
 class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   PasteKeyPressedHandler(TextEditArea textArea, KeyEvent keyEvent) {
@@ -63,11 +67,37 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       clipboard.setContents(specmanTransferable, null);
     }
     else {
-      // Single paragraph: plain text only for now, no whitespace problems
-      // TODO: restore character formatting (bold, italic etc.) for single-paragraph paste
+      // Single paragraph: insert plain text then restore character formatting
+      textArea.replaceSelection("");
+      int insertStart = textArea.getCaretPosition();
       String plainText = (String)clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
       textArea.replaceSelection(plainText);
+      applyCharacterFormatting(temp, insertStart);
+      // TODO: apply Steplink backgrounds
     }
+  }
+
+  private void applyCharacterFormatting(TextEditArea source, int insertStart) {
+    WrappedDocument sourceDoc = source.getWrappedDocument();
+    StyledDocument targetDoc = (StyledDocument) textArea.getDocument();
+    List<WrappedElement> leaves = new ArrayList<>();
+    collectLeaves(sourceDoc.getRootElements().get(0), leaves); // skip bidi root
+    int targetPos = insertStart;
+    for (WrappedElement leaf : leaves) {
+      int length = leaf.getEndOffset().distance(leaf.getStartOffset());
+      try {
+        String text = sourceDoc.getText(leaf.getStartOffset(), length);
+        if ("\n".equals(text)) continue;
+        targetDoc.setCharacterAttributes(targetPos, text.length(), leaf.getAttributes(), false);
+        targetPos += text.length();
+      }
+      catch (Exception ignored) {}
+    }
+  }
+
+  private void collectLeaves(WrappedElement e, List<WrappedElement> leaves) {
+    if (e.getElementCount() == 0) leaves.add(e);
+    else for (int i = 0; i < e.getElementCount(); i++) collectLeaves(e.getElement(i), leaves);
   }
 
   private boolean hasMultipleParagraphs(TextEditArea temp) {
