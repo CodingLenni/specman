@@ -37,7 +37,7 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   }
 
   void handle() {
-    try {
+    try (UndoRecording ur = editor().composeUndo()) {
       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
       Transferable contents = clipboard.getContents(null);
       if (contents != null) {
@@ -80,17 +80,15 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     TextEditAreaModel_V002 formattingOnly = new TextEditAreaModel_V002(
         model.text, model.plainText, nonChangeMarkups, (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
-    try (UndoRecording ur = editor().composeUndo()) {
-      if (hasMultipleParagraphs(temp)) {
-        pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
-      }
-      else {
-        pasteSingleParagraph(temp, clipboard);
-      }
-      AbstractSchrittView step = editor().findeSchritt(textArea);
-      if (step != null) {
-        step.registerAllExistingStepnumbers();
-      }
+    if (hasMultipleParagraphs(temp)) {
+      pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
+    }
+    else {
+      pasteSingleParagraph(temp, clipboard);
+    }
+    AbstractSchrittView step = editor().findeSchritt(textArea);
+    if (step != null) {
+      step.registerAllExistingStepnumbers();
     }
   }
 
