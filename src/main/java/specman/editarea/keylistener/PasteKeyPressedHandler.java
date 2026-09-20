@@ -129,7 +129,9 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     WrappedDocument doc = temp.getWrappedDocument();
     WrappedPosition firstContent = firstNonNewline(doc, doc.start(), doc.end());
     WrappedPosition lastContent = lastNonNewline(doc, doc.end(), doc.start());
-    if (firstContent == null || lastContent == null || !lastContent.greater(firstContent)) return false;
+    if (firstContent == null || lastContent == null || !lastContent.greater(firstContent)) {
+      return false;
+    }
     WrappedElement firstPara = doc.getParagraphElement(firstContent);
     WrappedElement lastPara = doc.getParagraphElement(lastContent);
     return !firstPara.getStartOffset().equals(lastPara.getStartOffset());
@@ -137,15 +139,19 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
 
   private WrappedPosition firstNonNewline(WrappedDocument doc, WrappedPosition from, WrappedPosition to) {
     for (WrappedPosition p = from; !p.greater(to); p = p.inc()) {
-      try { if (!"\n".equals(doc.getText(p, 1))) return p; } catch (Exception e) { break; }
+      if (!isNewline(doc, p)) return p;
     }
     return null;
   }
 
   private WrappedPosition lastNonNewline(WrappedDocument doc, WrappedPosition from, WrappedPosition to) {
     for (WrappedPosition p = from; !p.less(to); p = p.dec()) {
-      try { if (!"\n".equals(doc.getText(p, 1))) return p; } catch (Exception e) { break; }
+      if (!isNewline(doc, p)) return p;
     }
     return null;
+  }
+
+  private boolean isNewline(WrappedDocument doc, WrappedPosition p) {
+    try { return "\n".equals(doc.getText(p, 1)); } catch (Exception e) { return true; }
   }
 }
