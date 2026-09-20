@@ -62,7 +62,7 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     try {
       textArea.replaceSelection("");
       int caretPos = textArea.getCaretPosition();
-      int expectedLen = model.plainText.stripTrailing().length();
+      int expectedLen = model.plainText.length() - 1; // getPlainText() always appends one structural \n
       int docLenBefore = textArea.getDocument().getLength();
 
       HTMLEditorKit kit = (HTMLEditorKit) textArea.getEditorKit();
