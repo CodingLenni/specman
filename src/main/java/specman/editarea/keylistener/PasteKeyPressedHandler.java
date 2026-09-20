@@ -5,6 +5,7 @@ import specman.editarea.TextEditArea;
 import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
+import specman.editarea.document.WrappedBadLocationException;
 import specman.model.v002.TextEditAreaModel_V002;
 
 import java.awt.*;
@@ -139,19 +140,28 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
 
   private WrappedPosition firstNonNewline(WrappedDocument doc, WrappedPosition from, WrappedPosition to) {
     for (WrappedPosition p = from; !p.greater(to); p = p.inc()) {
-      if (!isNewline(doc, p)) return p;
+      if (!isNewline(doc, p)) {
+        return p;
+      }
     }
     return null;
   }
 
   private WrappedPosition lastNonNewline(WrappedDocument doc, WrappedPosition from, WrappedPosition to) {
     for (WrappedPosition p = from; !p.less(to); p = p.dec()) {
-      if (!isNewline(doc, p)) return p;
+      if (!isNewline(doc, p)) {
+        return p;
+      }
     }
     return null;
   }
 
   private boolean isNewline(WrappedDocument doc, WrappedPosition p) {
-    try { return "\n".equals(doc.getText(p, 1)); } catch (Exception e) { return true; }
+    try {
+      return "\n".equals(doc.getText(p, 1));
+    }
+    catch (WrappedBadLocationException e) {
+      return true; // position at or beyond document boundary — treat as newline to stop iteration
+    }
   }
 }
