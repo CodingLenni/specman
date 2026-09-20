@@ -6,8 +6,8 @@ import specman.editarea.document.WrappedDocument;
 import specman.editarea.document.WrappedElement;
 import specman.editarea.document.WrappedPosition;
 import specman.editarea.document.WrappedBadLocationException;
-import specman.editarea.markups.MarkupBackgroundStyleInitializer;
 import specman.editarea.markups.MarkupType;
+import specman.editarea.markups.TextMarkup;
 import specman.model.v002.Markup_V002;
 import specman.undo.manager.UndoRecording;
 import specman.model.v002.TextEditAreaModel_V002;
@@ -68,7 +68,12 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
 
   private void pasteFormatted(TextEditAreaModel_V002 model, Transferable specmanTransferable, Clipboard clipboard) throws Exception {
     List<Markup_V002> nonChangeMarkups = model.markups != null
-        ? model.markups.stream().filter(m -> !m.type.marksChange()).collect(Collectors.toList())
+        ? model.markups.stream()
+            .filter(m -> !m.type.marksChange() || m.type.isSteplink())
+            .map(m -> m.type == MarkupType.ChangedSteplink
+                ? new Markup_V002(m.from, m.to, MarkupType.Steplink, null)
+                : m)
+            .collect(Collectors.toList())
         : new ArrayList<>();
     if (isTrackingChanges()) {
       nonChangeMarkups = nonChangeMarkups.stream()
@@ -114,10 +119,7 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
     }
     if (!nonChangeMarkups.isEmpty()) {
       int offset = caretModelBefore + 1; // +1 for leading structural \n that paste inserts
-      List<Markup_V002> adjustedMarkups = nonChangeMarkups.stream()
-          .map(m -> new Markup_V002(m.from + offset, m.to + offset, m.type, m.changeset))
-          .collect(Collectors.toList());
-      new MarkupBackgroundStyleInitializer(textArea, adjustedMarkups).styleChangedTextSections();
+      applySteplinkColors(nonChangeMarkups, offset);
     }
     clipboard.setContents(specmanTransferable, null);
   }
@@ -150,6 +152,19 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
         targetPos += text.length();
       }
       catch (Exception ignored) {}
+    }
+  }
+
+  /** Applies Steplink background colors directly to specific spans with merge mode,
+   * without MarkupBackgroundStyleInitializer's standardSection reset that would
+   * overwrite the changeset yellow on surrounding text. */
+  private void applySteplinkColors(List<Markup_V002> markups, int insertModelPos) {
+    WrappedDocument wd = getWrappedDocument();
+    StyledDocument doc = (StyledDocument) textArea.getDocument();
+    for (Markup_V002 m : markups) {
+      AttributeSet style = TextMarkup.toBackground(m.type, m.changeset);
+      int from = wd.fromModel(insertModelPos + m.from).unwrap();
+      doc.setCharacterAttributes(from, m.to - m.from + 1, style, false);
     }
   }
 
