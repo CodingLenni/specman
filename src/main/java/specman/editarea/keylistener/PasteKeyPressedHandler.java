@@ -20,6 +20,8 @@ import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
 
+import static specman.ChangeSet.changeset;
+
 class PasteKeyPressedHandler extends AbstractKeyEventHandler {
   PasteKeyPressedHandler(TextEditArea textArea, KeyEvent keyEvent) {
     super(textArea, keyEvent);
@@ -60,10 +62,17 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
         model.text, model.plainText, new ArrayList<>(), (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
     if (hasMultipleParagraphs(temp)) {
-      // Multi-paragraph: use clipboard copy/paste — user accepts structural newlines
+      // Multi-paragraph: formatting comes free via copy/paste; apply changeset color manually
+      int caretBefore = textArea.getCaretPosition();
       temp.selectAll();
       temp.copy();
       textArea.paste();
+      if (isTrackingChanges()) {
+        int caretAfter = textArea.getCaretPosition();
+        ((StyledDocument) textArea.getDocument())
+            .setCharacterAttributes(caretBefore, caretAfter - caretBefore,
+                changeset().textBackground(), false);
+      }
       clipboard.setContents(specmanTransferable, null);
     }
     else {
