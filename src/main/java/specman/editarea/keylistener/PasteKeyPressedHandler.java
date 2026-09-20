@@ -62,31 +62,42 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
         model.text, model.plainText, new ArrayList<>(), (specman.ChangeInfo) null);
     TextEditArea temp = new TextEditArea(formattingOnly, textArea.getFont());
     if (hasMultipleParagraphs(temp)) {
-      // Multi-paragraph: formatting comes free via copy/paste; apply changeset color manually
-      int caretBefore = textArea.getCaretPosition();
-      temp.selectAll();
-      temp.copy();
-      textArea.paste();
-      if (isTrackingChanges()) {
-        int caretAfter = textArea.getCaretPosition();
-        ((StyledDocument) textArea.getDocument())
-            .setCharacterAttributes(caretBefore, caretAfter - caretBefore,
-                changeset().textBackground(), false);
-      }
-      clipboard.setContents(specmanTransferable, null);
+      pasteMultipleParagraphs(temp, specmanTransferable, clipboard);
     }
     else {
-      // Single paragraph: insert plain text then restore character formatting
-      textArea.replaceSelection("");
-      int insertStart = textArea.getCaretPosition();
-      String plainText = (String)clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
-      // replaceSelection uses the StyledEditorKit's current input attributes, which
-      // aenderungsStilSetzenWennNochNichtVorhanden() already set to the changeset color
-      // in change tracking mode — so inserted text is automatically colored correctly.
-      textArea.replaceSelection(plainText);
-      applyCharacterFormatting(temp, insertStart);
-      // TODO: apply Steplink backgrounds
+      pasteSingleParagraph(temp, clipboard);
     }
+  }
+
+  /** Pastes multi-paragraph content via the clipboard copy/paste path, which preserves
+   * HTML structure and paragraph types. Formatting comes for free; in change tracking
+   * mode the changeset color must be applied explicitly to the inserted range. */
+  private void pasteMultipleParagraphs(TextEditArea temp, Transferable specmanTransferable, Clipboard clipboard) {
+    int caretBefore = textArea.getCaretPosition();
+    temp.selectAll();
+    temp.copy();
+    textArea.paste();
+    if (isTrackingChanges()) {
+      int caretAfter = textArea.getCaretPosition();
+      ((StyledDocument) textArea.getDocument())
+          .setCharacterAttributes(caretBefore, caretAfter - caretBefore,
+              changeset().textBackground(), false);
+    }
+    clipboard.setContents(specmanTransferable, null);
+  }
+
+  /** Pastes single-paragraph content as plain text, then restores character formatting
+   * (bold, italic etc.) from the source. Using {@code replaceSelection} automatically
+   * picks up the StyledEditorKit input attributes, which
+   * {@code aenderungsStilSetzenWennNochNichtVorhanden()} already set to the changeset
+   * color in change tracking mode — so the inserted text is colored correctly for free. */
+  private void pasteSingleParagraph(TextEditArea temp, Clipboard clipboard) throws Exception {
+    textArea.replaceSelection("");
+    int insertStart = textArea.getCaretPosition();
+    String plainText = (String) clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
+    textArea.replaceSelection(plainText);
+    applyCharacterFormatting(temp, insertStart);
+    // TODO: apply Steplink backgrounds
   }
 
   private void applyCharacterFormatting(TextEditArea source, int insertStart) {
