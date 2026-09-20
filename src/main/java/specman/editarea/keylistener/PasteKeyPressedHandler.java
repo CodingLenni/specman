@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
 import static specman.ChangeSet.changeset;
@@ -89,7 +90,7 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       pasteMultipleParagraphs(temp, nonChangeMarkups, specmanTransferable, clipboard);
     }
     else {
-      pasteSingleParagraph(temp, clipboard);
+      pasteSingleParagraph(temp, nonChangeMarkups, clipboard);
     }
     AbstractSchrittView step = editor().findeSchritt(textArea);
     if (step != null) {
@@ -129,12 +130,15 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
    * picks up the StyledEditorKit input attributes, which
    * {@code aenderungsStilSetzenWennNochNichtVorhanden()} already set to the changeset
    * color in change tracking mode — so the inserted text is colored correctly for free. */
-  private void pasteSingleParagraph(TextEditArea temp, Clipboard clipboard) throws Exception {
+  private void pasteSingleParagraph(TextEditArea temp, List<Markup_V002> nonChangeMarkups,
+                                    Clipboard clipboard) throws Exception {
     textArea.replaceSelection("");
+    int insertModelPos = getWrappedCaretPosition().toModel();
     int insertStart = textArea.getCaretPosition();
     String plainText = (String) clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor);
     textArea.replaceSelection(plainText);
     applyCharacterFormatting(temp, insertStart);
+    applySteplinkColors(nonChangeMarkups, insertModelPos);
   }
 
   private void applyCharacterFormatting(TextEditArea source, int insertStart) {
@@ -148,7 +152,10 @@ class PasteKeyPressedHandler extends AbstractKeyEventHandler {
       try {
         String text = sourceDoc.getText(leaf.getStartOffset(), length);
         if ("\n".equals(text)) continue;
-        targetDoc.setCharacterAttributes(targetPos, text.length(), leaf.getAttributes(), false);
+        SimpleAttributeSet attrsWithoutBg = new SimpleAttributeSet(leaf.getAttributes());
+        attrsWithoutBg.removeAttribute(javax.swing.text.html.CSS.Attribute.BACKGROUND_COLOR);
+        attrsWithoutBg.removeAttribute(javax.swing.text.StyleConstants.Background);
+        targetDoc.setCharacterAttributes(targetPos, text.length(), attrsWithoutBg, false);
         targetPos += text.length();
       }
       catch (Exception ignored) {}
