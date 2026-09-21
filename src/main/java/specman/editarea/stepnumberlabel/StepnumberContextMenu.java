@@ -86,15 +86,15 @@ public class StepnumberContextMenu implements MouseListener {
   }
 
   private JMenuItem createCopyItem() {
-    return createItem("Copy", e -> editor().copyStepToClipboard(currentStep));
+    return createItem("Copy", "copy", e -> editor().copyStepToClipboard(currentStep));
   }
 
   private JMenuItem createCutItem() {
-    return createItem("Cut", e -> editor().cutStepToClipboard(currentStep, initiatingLabel));
+    return createItem("Cut", "cut", e -> editor().cutStepToClipboard(currentStep, initiatingLabel));
   }
 
   private JMenuItem createPasteItem() {
-    return createItem("Paste", e -> editor().pasteStepsAfter(currentStep));
+    return createItem("Paste", "paste", e -> editor().pasteStepsAfter(currentStep));
   }
 
   private JMenuItem createItem(String label, ActionListener actionListener) {
