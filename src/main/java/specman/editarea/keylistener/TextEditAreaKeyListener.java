@@ -25,13 +25,13 @@ public class TextEditAreaKeyListener extends AbstractKeyHandler implements KeyLi
 
   @Override
   public void keyPressed(KeyEvent e) {
-    if (e.isControlDown() && e.getKeyCode() == 'C') {
+    if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
       keyCopyPressed(e);
     }
-    if (e.isControlDown() && e.getKeyCode() == 'V') {
+    if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
       keyPastePressed(e);
     }
-    if (e.isControlDown() && e.getKeyCode() == 'X') {
+    if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_X) {
       keyCutPressed(e);
     }
     switch (e.getKeyCode()) {
