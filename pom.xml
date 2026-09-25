@@ -282,6 +282,7 @@
                 <specman.installer.upgradeUuid>866b19a6-d061-4d12-bb20-89c895cc9f48</specman.installer.upgradeUuid>
                 <specman.installer.input>${project.build.directory}/jpackage-input</specman.installer.input>
                 <specman.installer.dest>${project.build.directory}/installer</specman.installer.dest>
+                <specman.installer.wixResourceDir>${project.build.directory}/jpackage-wix</specman.installer.wixResourceDir>
             </properties>
             <build>
                 <plugins>
@@ -302,6 +303,29 @@
                                         <copy
                                             file="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
                                             todir="${specman.installer.input}"/>
+
+                                        <!--
+                                            Stage the WiX resource-dir override: main.wxs adds a File element
+                                            for specman.cmd, but jpackage copies main.wxs into its own temp
+                                            directory before compiling it, so WiX's sys.SOURCEFILEDIR can't be
+                                            used to locate specman.cmd relative to it. Instead, copy both files
+                                            into a build-local directory and bake the absolute path to
+                                            specman.cmd into main.wxs here, before jpackage/candle ever run.
+                                        -->
+                                        <mkdir dir="${specman.installer.wixResourceDir}"/>
+                                        <copy
+                                            file="${project.basedir}/src/main/jpackage/wix/specman.cmd"
+                                            todir="${specman.installer.wixResourceDir}"/>
+                                        <copy
+                                            file="${project.basedir}/src/main/jpackage/wix/main.wxs"
+                                            todir="${specman.installer.wixResourceDir}"
+                                            overwrite="true">
+                                            <filterset>
+                                                <filter
+                                                    token="specman.cmd.absolute.path"
+                                                    value="${specman.installer.wixResourceDir}/specman.cmd"/>
+                                            </filterset>
+                                        </copy>
                                     </target>
                                 </configuration>
                             </execution>
@@ -353,6 +377,8 @@
                                         <argument>${project.basedir}/src/main/jpackage/nsd.properties</argument>
                                         <argument>--add-launcher</argument>
                                         <argument>specman-cli=${project.basedir}/src/main/jpackage/cli.properties</argument>
+                                        <argument>--resource-dir</argument>
+                                        <argument>${specman.installer.wixResourceDir}</argument>
                                         <argument>--java-options</argument>
                                         <argument>-Dfile.encoding=UTF-8</argument>
                                         <argument>--jlink-options</argument>
