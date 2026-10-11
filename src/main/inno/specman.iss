@@ -1,5 +1,5 @@
-; Inno Setup script for the Specman Windows installer. Built via "mvn -P inno-installer clean verify",
-; which passes the following defines (see the inno-installer profile in pom.xml):
+; Inno Setup script for the Specman Windows installer. Built via "mvn -P windows-installer clean verify",
+; which passes the following defines (see the windows-installer profile in pom.xml):
 ;   AppVersion, AppId, AppPublisher, SourceDir (jpackage app image), OutDir, ProjectDir
 #define AppName "Specman"
 #define AppExe "Specman.exe"
@@ -42,7 +42,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; Forwarder that puts "specman" on the PATH; lives in its own bin directory so it can't clash with
 ; Specman.exe (Windows filenames are case-insensitive)
-Source: "{#ProjectDir}\src\main\jpackage\wix\specman.cmd"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#ProjectDir}\src\main\inno\specman.cmd"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"

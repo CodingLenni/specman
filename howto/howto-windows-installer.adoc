@@ -1,38 +1,5 @@
 ## Windows installer
-There are two ways to build a Windows installer: an MSI via jpackage + WiX (described first) and a Setup EXE via jpackage + Inno Setup (link:#_inno_setup_installer_alternative_to_the_msi[see below]). Besides the plain executable JAR, Specman can be packaged as a Windows MSI installer with a bundled Java runtime, so end users don't need a JRE installed. Building the installer requires JDK 17+ (for `jpackage`) and the https://wixtoolset.org/[WiX Toolset] 3.14 on the `PATH`, e.g. via winget:
-
-[source,shell]
-----
-winget install WiXToolset.WiXToolset
-----
-
-[source,shell]
-----
-mvn -P windows-installer clean verify
-----
-
-The resulting `specman-<version>-windows.msi` is written directly to `target/`, next to the portable zip from `mvn -P release-bundle package` (if built). It installs per-user (no admin rights required), adds a Start menu entry and desktop shortcut, associates `.nsd` files with Specman, and adds a `specman-cli` console launcher for the link:src/main/java/specman/cli/SpecmanCLI.java[command-line operations]. Bumping `<version>` in `pom.xml` between releases lets a new installer upgrade an existing installation in place.
-
-The installer also puts a `specman` command on the user's `PATH` (a small `specman.cmd` forwarder to `specman-cli.exe`, installed into its own `bin` subdirectory so it can't clash with `Specman.exe` — Windows filenames are case-insensitive). Open a *new* terminal after installing (PATH changes only apply to newly started processes) and run e.g. `specman --sanitize <file>`.
-
-### Known limitations
-* *Build machine antivirus/EDR can block the build.* Some products (observed with Windows Defender) deny read access to `klist.exe`, a Kerberos tool bundled in the `java.security.jgss` module that gets pulled into the runtime image transitively (likely via asciidoctorj/JRuby or iText). This fails the WiX linking step with `light.exe : error LGHT0001 ... UnauthorizedAccessException`. Workaround: add a temporary exclusion for the jpackage temp directory before building, e.g. from an elevated PowerShell: `Add-MpPreference -ExclusionPath "$env:LOCALAPPDATA\Temp"`. Excluding the `java.security.jgss` module itself (Specman doesn't use Kerberos/SSO) would be a cleaner fix but hasn't been implemented/verified yet.
-* *The installer and `Specman.exe`/`specman-cli.exe` are not code-signed.* On first run, Windows SmartScreen (and/or Defender) may block the unsigned executable ("Windows hat den PC geschützt"). For local testing: `Unblock-File <path-to-exe>`, or click "Weitere Informationen" → "Trotzdem ausführen" in the SmartScreen dialog, or add a Defender exclusion for the install directory. For real-world distribution this should be replaced by signing the MSI/EXE with an Authenticode certificate (`signtool sign /fd sha256 /tr <timestamp-url> ...`) so end users don't hit this at all.
-* *Migrating from a manual `SPECMAN_HOME` + `specman.bat` setup does not automatically take over the `.nsd` file association.* Windows remembers an explicit prior choice (`HKCU\...\FileExts\.nsd\UserChoice`) and, in setups where the association was registered directly rather than picked via "Open with", also a plain `HKCU\Software\Classes\.nsd` entry pointing at the old ProgId/batch file — neither is overwritten by the new installer. After installing, reset both if `.nsd` files still open the old way:
-+
-[source,powershell]
-----
-Remove-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.nsd" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "HKCU:\Software\Classes\.nsd" -Force -ErrorAction SilentlyContinue
-----
-+
-(the second command's target ProgId name depends on how the old install registered itself, e.g. `nsd_auto_file`; inspect `HKCU:\Software\Classes\.nsd` first to find it, and remove that ProgId key too). Then pick the new `Specman.exe` once via "Open with" → "Always use this app".
-* *The bundled runtime is not module-trimmed.* jpackage's automatic `jdeps`-based module detection is used as-is (plus `--strip-debug`/`--no-header-files`/`--no-man-pages`), so the MSI is relatively large (~90 MB). A curated `--add-modules` list could shrink this but needs testing against every feature (PDF export, Asciidoc export, etc.) to avoid removing something actually required.
-* *`src/main/jpackage/wix/main.wxs` is a hand-maintained copy of jpackage's internal WiX template* (extended with the `JpCliShim` component that adds `specman` to `PATH`). It was extracted from jpackage's own output via `jpackage --temp <dir> ...` (which leaves the generated WiX sources in `<dir>/config` instead of a throwaway temp folder) and is used via `--resource-dir`, which replaces only same-named resource files — everything else jpackage generates by default is unaffected. If the build JDK's jpackage version changes, re-extract the default template the same way and diff it against this file to pick up upstream changes. If the installer is ever switched from `--win-per-user-install` to a machine-wide install, `System="no"` on the `JpPathEnv` environment entry must become `System="yes"` (then admin rights are needed for the PATH change too).
-* *End-to-end runtime testing is partially done.* PDF export from the packaged app has been confirmed working. Opening `.nsd` files via the file association and Asciidoc export have not yet been confirmed in this environment.
-
-## Inno Setup installer (alternative to the MSI)
-As an alternative to the WiX-based MSI, Specman can be packaged as a Setup EXE built with https://jrsoftware.org/isinfo.php[Inno Setup] 6. jpackage only builds the app image here (`Specman.exe`, `specman-cli.exe` and the bundled Java runtime in `target/jpackage-app-image/Specman/`, no WiX involved); `src/main/inno/specman.iss` then packs that directory into the installer. Building requires JDK 17+ (for `jpackage`) and Inno Setup 6, e.g. via winget:
+Besides the plain executable JAR, Specman can be packaged as a Windows Setup EXE with a bundled Java runtime, so end users don't need a JRE installed. The build is two steps, both driven by Maven: `jpackage` creates the app image (`Specman.exe`, `specman-cli.exe` and the bundled runtime in `target/jpackage-app-image/Specman/`), then https://jrsoftware.org/isinfo.php[Inno Setup] 6 packs that directory into the installer (`src/main/inno/specman.iss`). Building requires JDK 17+ (for `jpackage`) and Inno Setup 6, e.g. via winget:
 
 [source,shell]
 ----
@@ -43,21 +10,48 @@ winget install JRSoftware.InnoSetup
 
 [source,shell]
 ----
-mvn -P inno-installer clean verify
-mvn -P inno-installer clean verify "-Dspecman.inno.iscc=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+mvn -P windows-installer clean verify
+mvn -P windows-installer clean verify "-Dspecman.inno.iscc=%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe"
 ----
 
-The resulting `specman-<version>-windows-setup.exe` is written directly to `target/`. The installer behaves like the MSI: it installs system-wide by default (admin rights required) into `%ProgramFiles%\Specman` and registers the `.nsd` association and the `PATH` entry machine-wide (HKLM). At startup the installer asks whether to install "for all users" (recommended, preselected) or "only for me"; the latter needs no admin rights, installs into `%LOCALAPPDATA%\Specman` and registers association and `PATH` entry for the current user only (HKCU). Upgrades and uninstalls reuse the mode of the existing installation. The installer adds a Start menu entry and an optional desktop shortcut (task in the wizard), associates `.nsd` files with Specman and puts a `specman` command on the user's `PATH` (`specman.cmd` forwarder in `bin`, open a *new* terminal afterwards). Uninstalling removes the files, the file association and the `PATH` entry.
+The resulting `specman-<version>-windows-setup.exe` is written directly to `target/`, next to the portable zip from `mvn -P release-bundle package` (if built).
 
-Updates: the installer's `AppId` is the same GUID as the MSI's upgrade code (`specman.installer.appId` in `pom.xml`) and must stay fixed. Installing a newer version over an existing one upgrades it in place; bump `<version>` in `pom.xml` between releases. Don't install the MSI and the Setup EXE side by side on the same machine, both register the `.nsd` association and a `PATH` entry.
+### What the installer does
+* *Install mode.* At startup the installer asks whether to install "for all users" (recommended, preselected, needs admin rights) or "only for me" (no admin rights). System-wide installs go to `%ProgramFiles%\Specman` and register the `.nsd` association and the `PATH` entry machine-wide (HKLM); per-user installs go to `%LOCALAPPDATA%\Specman` and register both for the current user only (HKCU). Upgrades and uninstalls reuse the mode of the existing installation. For unattended installs: `/VERYSILENT /ALLUSERS` or `/VERYSILENT /CURRENTUSER` (`/DIR="<path>"` overrides the target directory).
+* *Shortcuts and tools.* A Start menu entry, an optional desktop shortcut (task in the wizard) and the `specman-cli` console launcher for the link:src/main/java/specman/cli/SpecmanCLI.java[command-line operations].
+* *File association.* `.nsd` files are associated with Specman (including the icon).
+* *`specman` on the `PATH`.* A small `specman.cmd` forwarder to `specman-cli.exe`, installed into its own `bin` subdirectory so it can't clash with `Specman.exe` — Windows filenames are case-insensitive. Open a *new* terminal after installing (PATH changes only apply to newly started processes) and run e.g. `specman --sanitize <file>`.
+* *Updates.* The installer's `AppId` (`specman.installer.appId` in `pom.xml`) is a fixed GUID and must not change. Installing a newer version over an existing one upgrades it in place; bump `<version>` in `pom.xml` between releases.
+* *Uninstall.* Via "Apps & Features" or `unins000.exe` in the install directory; removes the files, the file association and the `PATH` entry.
 
-### Differences to the MSI
-* *No WiX and no hand-maintained template.* `main.wxs` is not used here; association, `PATH` entry, shortcuts and uninstall behaviour all live in `specman.iss`.
-* *EXE instead of MSI.* Not suitable for MSI-based software distribution (GPO, Intune); use the MSI for that.
-* *Wizard images are generated from the Specman logo.* The WiX bitmaps (`banner.bmp`, `dialog.bmp`) have different proportions than Inno's `WizardImageFile` (164x314) and `WizardSmallImageFile` (55x55) and are not reused. Instead `src/main/inno/wizard-large-*.bmp` and `wizard-small-*.bmp` (one per display scaling step, 100%–250%) are committed and referenced in `specman.iss`. If the logo (`src/main/resources/images/specman-300.png`) changes, regenerate them with `python src/main/inno/generate-wizard-images.py` (needs Pillow) and commit the result. The installer/uninstaller and the `Apps & Features` entry use `specman.ico` (`SetupIconFile`, `UninstallDisplayIcon`).
-* *Signing:* done via Inno's `SignTool` directive (and `signtool` for the launchers in the app image) once a certificate is available; without it, the same SmartScreen/Defender hints as in <<Known limitations>> apply.
+### Branding
+The wizard images are generated from the Specman logo: `src/main/inno/wizard-large-*.bmp` and `wizard-small-*.bmp` (one per display scaling step, 100%–250%) are committed and referenced in `specman.iss`. If the logo (`src/main/resources/images/specman-300.png`) changes, regenerate them with `python src/main/inno/generate-wizard-images.py` (needs Pillow) and commit the result. The installer/uninstaller and the "Apps & Features" entry use `specman.ico` (`SetupIconFile`, `UninstallDisplayIcon`).
+
+### Testing the installer
+Uninstall every previous Specman installation first (see <<Migrating from an older installation>>), then check:
+
+. *Install system-wide:* run the EXE, keep "for all users" (UAC prompt), finish the wizard. Specman starts from the Start menu entry and from the final "Launch Specman" checkbox.
+. *File association:* double-click a `.nsd` file (e.g. `doc/anagramms.nsd`); it opens in Specman and shows the Specman icon in Explorer.
+. *Command line:* in a *new* terminal, `specman --sanitize <file>` works; `where specman` points to `<install dir>\bin\specman.cmd`.
+. *Upgrade:* bump `<version>`, build again and run the new installer over the existing installation; no second entry in "Apps & Features", the old version is replaced, the `PATH` entry exists only once.
+. *Uninstall:* via "Apps & Features"; the install directory, Start menu entry, `.nsd` association and `PATH` entry are gone.
+. *Per-user mode:* repeat 1–5 with "only for me" (no UAC prompt, install directory `%LOCALAPPDATA%\Specman`).
+
+### Migrating from an older installation
+* *Former MSI installer.* An installation made with the previous MSI is not replaced by the Setup EXE (different installer technology). Uninstall it via "Apps & Features" first, otherwise both register the `.nsd` association and a `PATH` entry.
+* *Manual `SPECMAN_HOME` + `specman.bat` setup.* The `.nsd` file association is not taken over automatically. Windows remembers an explicit prior choice (`HKCU\...\FileExts\.nsd\UserChoice`) and, in setups where the association was registered directly rather than picked via "Open with", also a plain `HKCU\Software\Classes\.nsd` entry pointing at the old ProgId/batch file — neither is overwritten by the installer. After installing, reset both if `.nsd` files still open the old way:
++
+[source,powershell]
+----
+Remove-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.nsd" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "HKCU:\Software\Classes\.nsd" -Force -ErrorAction SilentlyContinue
+----
++
+(the second command's target ProgId name depends on how the old install registered itself, e.g. `nsd_auto_file`; inspect `HKCU:\Software\Classes\.nsd` first to find it, and remove that ProgId key too). Then pick the new `Specman.exe` once via "Open with" → "Always use this app".
 
 ### Known limitations
-* *Only partially tested end to end.* Building the installer, installing it and starting Specman from the installation have been confirmed. The individual scenarios — system-wide (all users) mode with the machine-wide `PATH` entry, upgrade over an existing installation, and uninstall (removal of files, `.nsd` association and `PATH` entry) — have not been verified separately yet.
-* *Build machine antivirus/EDR may still interfere.* The `klist.exe` read-access problem described under <<Known limitations>> occurred while WiX linked the MSI; Inno also reads every file of the app image when compressing, so a similar block is possible. The same exclusion workaround applies.
-* *The bundled runtime is not module-trimmed*, same as for the MSI (installer size is expected to be similar, ~90 MB, LZMA usually compresses slightly better).
+* *Only partially tested end to end.* Building the installer, installing it and starting Specman from the installation have been confirmed. The individual scenarios in <<Testing the installer>> — in particular the system-wide mode with the machine-wide `PATH` entry, upgrade and uninstall — have not been verified separately yet.
+* *The installer and `Specman.exe`/`specman-cli.exe` are not code-signed.* On first run, Windows SmartScreen (and/or Defender) may block the unsigned executable ("Windows hat den PC geschützt"). For local testing: `Unblock-File <path-to-exe>`, or click "Weitere Informationen" → "Trotzdem ausführen" in the SmartScreen dialog, or add a Defender exclusion for the install directory. For real-world distribution the EXE should be signed with an Authenticode certificate (Inno's `SignTool` directive, plus `signtool sign /fd sha256 /tr <timestamp-url> ...` for the launchers in the app image) so end users don't hit this at all.
+* *Build machine antivirus/EDR can block the build.* Some products (observed with Windows Defender and the former WiX-based build) deny read access to `klist.exe`, a Kerberos tool bundled in the `java.security.jgss` module that gets pulled into the runtime image transitively (likely via asciidoctorj/JRuby or iText). Inno reads every file of the app image when compressing, so a similar block is possible. Workaround: add a temporary exclusion for the build directory before building, e.g. from an elevated PowerShell: `Add-MpPreference -ExclusionPath "$env:LOCALAPPDATA\Temp"`. Excluding the `java.security.jgss` module itself (Specman doesn't use Kerberos/SSO) would be a cleaner fix but hasn't been implemented/verified yet.
+* *The bundled runtime is not module-trimmed.* jpackage's automatic `jdeps`-based module detection is used as-is (plus `--strip-debug`/`--no-header-files`/`--no-man-pages`), so the installer is relatively large (~80 MB). A curated `--add-modules` list could shrink this but needs testing against every feature (PDF export, Asciidoc export, etc.) to avoid removing something actually required.
+* *No MSI.* The Setup EXE is not suitable for MSI-based software distribution (GPO, Intune).
