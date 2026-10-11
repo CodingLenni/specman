@@ -46,6 +46,12 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 english.AppRunning=Specman is still running. Please close it and click Retry, or click Cancel to abort the uninstallation.
 german.AppRunning=Specman wird noch ausgeführt. Bitte beenden und "Wiederholen" wählen, oder "Abbrechen", um die Deinstallation abzubrechen.
 
+; app\ and runtime\ are generated completely by jpackage. The jar name contains the version, so without
+; this an upgrade would leave the previous version's jar behind (and stale runtime files on a JDK change).
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\app"
+Type: filesandordirs; Name: "{app}\runtime"
+
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 ; Forwarder that puts "specman" on the PATH; lives in its own bin directory so it can't clash with
