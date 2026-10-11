@@ -25,7 +25,22 @@ The resulting `specman-<version>-windows-setup.exe` is written directly to `targ
 * *Uninstall.* Via "Apps & Features" or `unins000.exe` in the install directory; removes the files, the file association and the `PATH` entry. If Specman is still running, the uninstaller asks to close it first (Retry/Cancel) instead of silently skipping the locked files; with `/VERYSILENT /SUPPRESSMSGBOXES` it aborts with exit code 1 and changes nothing. Inno only removes directories it created itself: if the install directory already existed (e.g. leftovers of an earlier, aborted uninstall), empty folders can remain after uninstalling — delete the old directory before installing.
 
 ### Branding
-The wizard images are generated from the Specman logo: `src/main/inno/wizard-large-*.bmp` and `wizard-small-*.bmp` (one per display scaling step, 100%–250%) are committed and referenced in `specman.iss`. If the logo (`src/main/resources/images/specman-300.png`) changes, regenerate them with `python src/main/inno/generate-wizard-images.py` (needs Pillow) and commit the result. The installer/uninstaller and the "Apps & Features" entry use `specman.ico` (`SetupIconFile`, `UninstallDisplayIcon`).
+The wizard images show the Specman logo (`src/main/resources/images/specman-300.png`) on a white background; the large one (welcome/finish page) additionally has the name "Specman" below the logo. `src/main/inno/wizard-large-*.bmp` and `wizard-small-*.bmp` are committed (24-bit BMP, one file per display scaling step 100%–250%, the suffix is the scaling in percent) and referenced in `specman.iss`. If the logo changes, recreate them with any image tool in Inno Setup's recommended sizes (width x height) and commit the result:
+
+[cols="1,2,2"]
+|===
+|Scaling |`wizard-large-*` |`wizard-small-*`
+
+|100% |164x314 |55x55
+|125% |192x386 |64x68
+|150% |246x459 |83x80
+|175% |273x556 |92x97
+|200% |328x628 |110x106
+|225% |355x680 |119x123
+|250% |410x797 |138x140
+|===
+
+The installer/uninstaller and the "Apps & Features" entry use `specman.ico` (`SetupIconFile`, `UninstallDisplayIcon`).
 
 ### Testing the installer
 Uninstall every previous Specman installation first (see <<Migrating from an older installation>>), then check:
