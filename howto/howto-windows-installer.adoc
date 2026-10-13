@@ -10,8 +10,8 @@ winget install JRSoftware.InnoSetup
 
 [source,shell]
 ----
-mvn -P windows-installer clean verify
-mvn -P windows-installer clean verify "-Dspecman.inno.iscc=%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe"
+mvn -P windows-installer clean package
+mvn -P windows-installer clean package "-Dspecman.inno.iscc=%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe"
 ----
 
 The resulting `specman-<version>-windows-setup.exe` is written directly to `target/`, next to the portable zip from `mvn -P release-bundle package` (if built).
@@ -20,8 +20,9 @@ The resulting `specman-<version>-windows-setup.exe` is written directly to `targ
 * *Install mode.* At startup the installer asks whether to install "for all users" (recommended, preselected, needs admin rights) or "only for me" (no admin rights). System-wide installs go to `%ProgramFiles%\Specman` and register the `.nsd` association and the `PATH` entry machine-wide (HKLM); per-user installs go to `%LOCALAPPDATA%\Specman` and register both for the current user only (HKCU). Upgrades and uninstalls reuse the mode of the existing installation. For unattended installs: `/VERYSILENT /ALLUSERS` or `/VERYSILENT /CURRENTUSER` (`/DIR="<path>"` overrides the target directory).
 * *Shortcuts and tools.* A Start menu entry, an optional desktop shortcut (task in the wizard) and the `specman-cli` console launcher for the link:src/main/java/specman/cli/SpecmanCLI.java[command-line operations].
 * *File association.* `.nsd` files are associated with Specman (including the icon).
+* *Grammar and reference model.* `SpecmanModel_V002.g4` and `specman-reference-v<major.minor>-*.nsd` (for AI-assisted spec authoring) are installed directly into the installation directory, at the same relative position as in the portable zip.
 * *`specman` on the `PATH`.* A small `specman.cmd` forwarder to `specman-cli.exe`, installed into its own `bin` subdirectory so it can't clash with `Specman.exe` — Windows filenames are case-insensitive. Open a *new* terminal after installing (PATH changes only apply to newly started processes) and run e.g. `specman --sanitize <file>`.
-* *Updates.* The installer's `AppId` (`specman.installer.appId` in `pom.xml`) is a fixed GUID and must not change. Installing a newer version over an existing one upgrades it in place; bump `<version>` in `pom.xml` between releases (the installer file name, the version shown in "Apps & Features" and the bundled launcher version all follow `<version>` automatically; it must be purely numeric, `-SNAPSHOT` is rejected by `jpackage`, and a `specman-reference-v<major.minor>-*.nsd` for the new `major.minor` must exist). Before copying, the installer clears `app\` and `runtime\` of the existing installation (`[InstallDelete]`), so the previous version's jar (its name contains the version) doesn't pile up. The install mode is taken over from the existing installation and not asked again; the directory page is always shown, prefilled with the existing directory (choosing a different directory leaves the old files behind, uninstall first if you want to move).
+* *Updates.* The installer's `AppId` (`specman.installer.appId` in `pom.xml`) is a fixed GUID and must not change. Installing a newer version over an existing one upgrades it in place; bump `<version>` in `pom.xml` between releases (the installer file name, the version shown in "Apps & Features" and the bundled launcher version all follow `<version>` automatically; it must be purely numeric, `-SNAPSHOT` is rejected by `jpackage`, and a `specman-reference-v<major.minor>-*.nsd` for the new `major.minor` must exist). Before copying, the installer clears `app\` and `runtime\` of the existing installation and the old reference model/grammar files (`[InstallDelete]`), so the previous version's jar and reference model (their names contain the version) don't pile up. The install mode is taken over from the existing installation and not asked again; the directory page is always shown, prefilled with the existing directory (choosing a different directory leaves the old files behind, uninstall first if you want to move).
 * *Uninstall.* Via "Apps & Features" or `unins000.exe` in the install directory; removes the files, the file association and the `PATH` entry. If Specman is still running, the uninstaller asks to close it first (Retry/Cancel) instead of silently skipping the locked files; with `/VERYSILENT /SUPPRESSMSGBOXES` it aborts with exit code 1 and changes nothing. Inno only removes directories it created itself: if the install directory already existed (e.g. leftovers of an earlier, aborted uninstall), empty folders can remain after uninstalling — delete the old directory before installing.
 
 ### Branding
@@ -45,7 +46,7 @@ The installer/uninstaller and the "Apps & Features" entry use `specman.ico` (`Se
 ### Testing the installer
 Uninstall every previous Specman installation first (see <<Migrating from an older installation>>), then check:
 
-. *Install system-wide:* run the EXE, keep "for all users" (UAC prompt), finish the wizard. Specman starts from the Start menu entry and from the final "Launch Specman" checkbox.
+. *Install system-wide:* run the EXE, keep "for all users" (UAC prompt), finish the wizard. Specman starts from the Start menu entry and from the final "Launch Specman" checkbox. The install directory contains `SpecmanModel_V002.g4` and the `specman-reference-v*.nsd` directly (as in the portable zip), not below `app\`.
 . *File association:* double-click a `.nsd` file (e.g. `doc/anagramms.nsd`); it opens in Specman and shows the Specman icon in Explorer.
 . *Command line:* in a *new* terminal, `specman --sanitize <file>` works; `where specman` points to `<install dir>\bin\specman.cmd`.
 . *Upgrade:* bump `<version>`, build again and run the new installer over the existing installation; no second entry in "Apps & Features", the old version is replaced, the `PATH` entry exists only once.

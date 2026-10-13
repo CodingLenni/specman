@@ -1,6 +1,6 @@
-﻿; Inno Setup script for the Specman Windows installer. Built via "mvn -P windows-installer clean verify",
+﻿; Inno Setup script for the Specman Windows installer. Built via "mvn -P windows-installer clean package",
 ; which passes the following defines (see the windows-installer profile in pom.xml):
-;   AppVersion, AppId, AppPublisher, SourceDir (jpackage app image), OutDir, ProjectDir
+;   AppVersion, AppId, AppPublisher, SourceDir (jpackage app image), ExtraDir (grammar and reference model), OutDir, ProjectDir
 #define AppName "Specman"
 #define AppExe "Specman.exe"
 
@@ -48,12 +48,18 @@ german.AppRunning=Specman wird noch ausgeführt. Bitte beenden und "Wiederholen"
 
 ; app\ and runtime\ are generated completely by jpackage. The jar name contains the version, so without
 ; this an upgrade would leave the previous version's jar behind (and stale runtime files on a JDK change).
+; Same for the reference model, whose name contains the model version (e.g. specman-reference-v1.3-model-v2.nsd).
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\app"
 Type: filesandordirs; Name: "{app}\runtime"
+Type: files; Name: "{app}\specman-reference-v*.nsd"
+Type: files; Name: "{app}\SpecmanModel_V*.g4"
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+; Grammar and reference model (needed for AI-assisted spec authoring) directly in the installation
+; directory, at the same place as in the portable release bundle
+Source: "{#ExtraDir}\*"; DestDir: "{app}"; Flags: ignoreversion
 ; Forwarder that puts "specman" on the PATH; lives in its own bin directory so it can't clash with
 ; Specman.exe (Windows filenames are case-insensitive)
 Source: "{#ProjectDir}\src\main\inno\specman.cmd"; DestDir: "{app}\bin"; Flags: ignoreversion

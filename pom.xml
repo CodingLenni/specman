@@ -22,6 +22,8 @@
         <maven.compiler.target>21</maven.compiler.target>
         <flatlaf.version>3.5</flatlaf.version>
         <itext.version>9.4.0</itext.version>
+        <!-- Output of jpackage in the windows-installer profile; global because the pre-clean unlock below needs it without the profile -->
+        <specman.inno.appImageDir>${project.build.directory}/jpackage-app-image</specman.inno.appImageDir>
     </properties>
 
     <dependencies>
@@ -293,6 +295,29 @@
                     </execution>
 
                     <!--
+                        jpackage creates the launchers in the app image read-only, which maven-clean-plugin
+                        can't delete on Windows ("Failed to delete ...Specman.exe"). Clearing the flag in
+                        pre-clean lets "mvn clean" work on a previously built app image. Deliberately part of
+                        the main build, not of the windows-installer profile: it must also run for a plain
+                        "mvn clean" or "mvn -P release-bundle clean package" after an installer build.
+                        Does nothing if there is no app image.
+                    -->
+                    <execution>
+                        <id>unlock-inno-app-image</id>
+                        <phase>pre-clean</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <attrib readonly="false">
+                                    <fileset dir="${specman.inno.appImageDir}" erroronmissingdir="false"/>
+                                </attrib>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!--
                         Generates readme.adoc from howto/template-readme.adoc and the region between
                         '// tag::readme[]' and '// end::readme[]' in doc/specman-manual.adoc.
                         GitHub doesn't resolve AsciiDoc includes, so the readme must be a real copy.
@@ -359,7 +384,7 @@
             Builds the Windows installer: jpackage creates the app image (launchers + bundled Java
             runtime), Inno Setup 6 turns it into a Setup EXE (see src/main/inno/specman.iss).
             Requires JDK 17+ (jpackage) and Inno Setup 6 (ISCC.exe on the PATH, or set -Dspecman.inno.iscc=<full path>).
-            Usage: mvn -P windows-installer clean verify
+            Usage: mvn -P windows-installer clean package
         -->
         <profile>
             <id>windows-installer</id>
@@ -369,7 +394,7 @@
                      upgrades the older one in place. It is the upgrade code of the former MSI installer. -->
                 <specman.installer.appId>866b19a6-d061-4d12-bb20-89c895cc9f48</specman.installer.appId>
                 <specman.installer.input>${project.build.directory}/jpackage-input</specman.installer.input>
-                <specman.inno.appImageDir>${project.build.directory}/jpackage-app-image</specman.inno.appImageDir>
+                <specman.inno.extraDir>${project.build.directory}/inno-extra</specman.inno.extraDir>
                 <specman.inno.iscc>ISCC.exe</specman.inno.iscc>
             </properties>
             <build>
@@ -379,25 +404,6 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <version>3.1.0</version>
                         <executions>
-                            <!--
-                                jpackage creates the launchers in the app image read-only, which maven-clean-plugin
-                                can't delete on Windows ("Failed to delete ...Specman.exe"). Clearing the flag in
-                                pre-clean lets "mvn clean" work on a previously built app image.
-                            -->
-                            <execution>
-                                <id>unlock-inno-app-image</id>
-                                <phase>pre-clean</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <attrib readonly="false">
-                                            <fileset dir="${specman.inno.appImageDir}" erroronmissingdir="false"/>
-                                        </attrib>
-                                    </target>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>stage-inno-input</id>
                                 <phase>package</phase>
@@ -411,7 +417,11 @@
                                             file="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
                                             todir="${specman.installer.input}"/>
 
-                                        <!-- Grammar and matching reference model, same as in the release-bundle profile. -->
+                                        <!--
+                                            Grammar and matching reference model, same files as in the release-bundle profile.
+                                            Staged outside the jpackage input (which ends up in app\) so that the installer
+                                            puts them directly into the installation directory, like the release bundle.
+                                        -->
                                         <fail message="No specman-reference-v${specman.release.version}-*.nsd found in ${project.basedir} for version ${project.version}">
                                             <condition>
                                                 <resourcecount count="0">
@@ -419,8 +429,8 @@
                                                 </resourcecount>
                                             </condition>
                                         </fail>
-                                        <mkdir dir="${specman.installer.input}/docs"/>
-                                        <copy todir="${specman.installer.input}/docs" flatten="true">
+                                        <mkdir dir="${specman.inno.extraDir}"/>
+                                        <copy todir="${specman.inno.extraDir}" flatten="true">
                                             <fileset file="${project.basedir}/src/main/antlr4/specman/model/v002/SpecmanModel_V002.g4"/>
                                             <fileset dir="${project.basedir}" includes="specman-reference-v${specman.release.version}-*.nsd"/>
                                         </copy>
@@ -487,6 +497,7 @@
                                         <argument>/DAppId=${specman.installer.appId}</argument>
                                         <argument>/DAppPublisher=${specman.installer.vendor}</argument>
                                         <argument>/DSourceDir=${specman.inno.appImageDir}/Specman</argument>
+                                        <argument>/DExtraDir=${specman.inno.extraDir}</argument>
                                         <argument>/DOutDir=${project.build.directory}</argument>
                                         <argument>/DProjectDir=${project.basedir}</argument>
                                         <argument>${project.basedir}/src/main/inno/specman.iss</argument>
